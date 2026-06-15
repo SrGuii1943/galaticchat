@@ -2,7 +2,7 @@
 <html lang="pt-PT">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Galatic Chat — Premium Cosmic Messenger</title>
     <!-- Tailwind CSS para estilização rápida e responsiva -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -33,6 +33,8 @@
             overflow: hidden;
             margin: 0;
             padding: 0;
+            height: 100vh;
+            height: 100dvh;
             user-select: none;
             -webkit-user-select: none;
         }
@@ -193,8 +195,8 @@
     <div class="nebula"></div>
     <div class="nebula-2"></div>
 
-    <!-- CONTENT CONTAINER -->
-    <div class="relative z-10 w-full h-screen flex flex-col justify-between p-0 md:p-4 select-none">
+    <!-- CONTENT CONTAINER (Otimizado com h-[100dvh] para garantir que tudo cabe no telemóvel) -->
+    <div class="relative z-10 w-full h-screen h-[100dvh] flex flex-col justify-between p-0 md:p-4 select-none">
 
         <!-- ================= ECRÃS DE AUTENTICAÇÃO (SEPARADOS) ================= -->
 
@@ -323,7 +325,7 @@
             </div>
 
             <!-- PAINEL DE CHAT: CONVERSAS EM TEMPO REAL -->
-            <div id="chat-content-container" class="hidden md:flex flex-1 flex-col h-full bg-black/10 relative z-10">
+            <div id="chat-content-container" class="hidden md:flex flex-1 flex-col h-full bg-black/10 relative z-10 min-h-0">
                 
                 <!-- Estado Vazio / Mensagem de Boas-vindas (Apenas visível no computador quando nenhum chat está ativo) -->
                 <div id="chat-welcome-state" class="flex-1 flex flex-col items-center justify-center text-center p-8 space-y-4">
@@ -334,11 +336,11 @@
                     <p class="text-xs text-gray-400 max-w-sm">Estabeleça uma ligação com outros viajantes espaciais para abrir um canal de mensagens criptografado.</p>
                 </div>
 
-                <!-- Canal de Mensagens Ativo -->
-                <div id="chat-active-state" class="hidden flex-1 flex flex-col h-full">
+                <!-- Canal de Mensagens Ativo (Otimizado com min-h-0 e flex-col de forma rígida) -->
+                <div id="chat-active-state" class="hidden flex-1 flex flex-col h-full min-h-0">
                     
                     <!-- Cabeçalho do Chat Selecionado -->
-                    <div class="p-4 border-b border-white/5 bg-black/20 flex items-center justify-between">
+                    <div class="p-4 border-b border-white/5 bg-black/20 flex items-center justify-between flex-shrink-0">
                         <div class="flex items-center gap-3">
                             <button onclick="backToSidebar()" class="p-2 rounded-lg hover:bg-white/10 text-indigo-400 transition flex items-center gap-1" title="Voltar para a Lista">
                                 <i data-lucide="arrow-left" class="w-5 h-5"></i>
@@ -378,13 +380,13 @@
                         </div>
                     </div>
 
-                    <!-- Visualizador de Histórico de Mensagens -->
-                    <div id="messages-scroller" class="flex-1 overflow-y-auto p-4 space-y-4 bg-gradient-to-b from-transparent to-black/10">
+                    <!-- Visualizador de Histórico de Mensagens (min-h-0 e flex-1 asseguram rolagem perfeita no telemóvel) -->
+                    <div id="messages-scroller" class="flex-1 overflow-y-auto p-4 space-y-4 bg-gradient-to-b from-transparent to-black/10 min-h-0">
                         <!-- Gerado via JS em tempo real -->
                     </div>
 
                     <!-- Visualização de Mensagem de Resposta -->
-                    <div id="reply-preview-container" class="hidden px-4 py-2 bg-indigo-500/10 border-t border-indigo-500/20 flex items-center justify-between">
+                    <div id="reply-preview-container" class="hidden px-4 py-2 bg-indigo-500/10 border-t border-indigo-500/20 flex items-center justify-between flex-shrink-0">
                         <div class="flex items-center gap-2 text-xs text-indigo-300">
                             <i data-lucide="reply" class="w-3.5 h-3.5"></i>
                             <span>A responder a <strong id="reply-target-nick">...</strong>: <em id="reply-target-text" class="not-italic truncate max-w-[200px]">...</em></span>
@@ -394,8 +396,8 @@
                         </button>
                     </div>
 
-                    <!-- Input e Envio de Mensagens -->
-                    <div class="p-3 border-t border-white/5 bg-black/30 flex flex-col gap-2">
+                    <!-- Input e Envio de Mensagens (Fica firmemente posicionado no rodapé com flex-shrink-0) -->
+                    <div class="p-3 border-t border-white/5 bg-black/30 flex flex-col gap-2 flex-shrink-0 pb-safe pb-4">
                         <div class="flex items-center gap-2">
                             
                             <!-- Menu de Anexos Cósmicos -->
@@ -589,7 +591,8 @@
         let usersCache = {}; 
         let messagesList = []; 
         let blocksList = []; 
-        let seenMessagesIds = new Set(); // Evita notificações repetidas
+        let seenMessagesIds = new Set(); // Evita notificações e loops de áudio repetidos
+        let unreadCountMap = {}; // Guarda número de mensagens não lidas por utilizador (uid -> quantidade)
         let realTimeChannel = null; 
         let userOnlineChannel = null; 
         let pollingInterval = null; // Intervalo para sondagem de redundância HTTP
@@ -798,11 +801,21 @@
         * ==========================================
         */
         function triggerMessageNotification() {
-            notificationSound.currentTime = 0;
-            notificationSound.play().catch(err => {
-                // Previne erros se o navegador bloquear o autoplay antes de interagir com o ecrã
-                console.log("Áudio de notificação cósmica bloqueado temporariamente:", err);
-            });
+            try {
+                notificationSound.pause();
+                notificationSound.currentTime = 0;
+                // Força o carregamento do ficheiro de áudio para contornar restrições móveis
+                notificationSound.load();
+                
+                const playPromise = notificationSound.play();
+                if (playPromise !== undefined) {
+                    playPromise.catch(err => {
+                        console.log("Áudio de notificação cósmica bloqueado pelas restrições do navegador:", err);
+                    });
+                }
+            } catch (err) {
+                console.warn("Erro ao reproduzir notificação sonora:", err);
+            }
         }
 
         /*
@@ -1084,12 +1097,18 @@
                 const isOnline = user.status === 'online';
                 const statusColor = isOnline ? 'bg-green-500' : 'bg-gray-500 animate-pulse';
                 
+                // Verifica a quantidade de mensagens não lidas
+                const unreadCount = unreadCountMap[user.uid] || 0;
+                const unreadBadgeHTML = unreadCount > 0 
+                    ? `<span class="bg-emerald-500 text-black text-[10px] font-extrabold w-5 h-5 flex items-center justify-center rounded-full animate-bounce">${unreadCount}</span>` 
+                    : '';
+
                 const card = document.createElement('div');
-                card.className = "p-3 mx-2 my-1 rounded-xl flex items-center justify-between hover:bg-white/5 cursor-pointer transition relative";
+                card.className = `p-3 mx-2 my-1 rounded-xl flex items-center justify-between hover:bg-white/5 cursor-pointer transition relative ${activeChatUser && activeChatUser.uid === user.uid ? 'bg-white/5' : ''}`;
                 card.onclick = () => selectActiveChat(user);
 
                 card.innerHTML = `
-                    <div class="flex items-center gap-3">
+                    <div class="flex items-center gap-3 min-w-0">
                         <div class="relative flex-shrink-0">
                             <img src="${user.avatar_url}" class="w-11 h-11 rounded-full object-cover border border-white/10" alt="Avatar">
                             <span class="absolute bottom-0 right-0 w-3 h-3 ${statusColor} border-2 border-black rounded-full"></span>
@@ -1101,6 +1120,9 @@
                             </div>
                             <span class="text-[11px] text-gray-400 block truncate max-w-[180px]">${user.bio || 'Sem sinal de biografia...'}</span>
                         </div>
+                    </div>
+                    <div class="flex-shrink-0 ml-2">
+                        ${unreadBadgeHTML}
                     </div>
                 `;
 
@@ -1151,6 +1173,11 @@
         async function selectActiveChat(user) {
             activeChatUser = user;
 
+            // Remove o contador de mensagens não lidas do contacto ao abrir o chat
+            if (unreadCountMap[user.uid]) {
+                unreadCountMap[user.uid] = 0;
+            }
+
             document.getElementById('chat-welcome-state').classList.add('hidden');
             document.getElementById('chat-active-state').classList.remove('hidden');
 
@@ -1167,6 +1194,9 @@
             
             // Força a atualização do layout responsivo com base no novo estado do chat ativo
             setupResponsiveLayout();
+            
+            // Re-renderiza a lista para atualizar os distintivos de não lidas imediatamente
+            renderConversationsList(Object.values(usersCache));
         }
 
         function backToSidebar() {
@@ -1249,9 +1279,9 @@
                 let contentHTML = `<p class="text-sm break-words select-text">${escapeHTML(msg.content)}</p>`;
 
                 if (msg.message_type === 'image') {
-                    contentHTML = `<img src="${msg.media_url}" class="rounded-xl max-w-xs max-h-60 object-cover cursor-pointer hover:scale-[1.02] transition" onclick="window.open('${msg.media_url}')">`;
+                    contentHTML = `<img src="${msg.media_url}" class="rounded-xl max-w-xs max-h-60 object-cover cursor-pointer hover:scale-[1.02] transition" onclick="window.open('${msg.media_url}')" onerror="this.src='https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=300'">`;
                 } else if (msg.message_type === 'video') {
-                    contentHTML = `<video src="${msg.media_url}" controls class="rounded-xl max-w-xs max-h-60"></video>`;
+                    contentHTML = `<video src="${msg.media_url}" controls class="rounded-xl max-w-xs max-h-60" onerror="this.style.display='none'"></video>`;
                 } else if (msg.message_type === 'file') {
                     contentHTML = `
                         <a href="${msg.media_url}" target="_blank" class="flex items-center gap-2 p-2 rounded-lg bg-black/20 hover:bg-black/35 text-xs text-indigo-300 transition">
@@ -1529,12 +1559,17 @@
                 const fileName = `${Math.random()}_${Date.now()}.${fileExt}`;
                 const filePath = `${currentUser.uid}/${fileName}`;
 
+                // Upload para o Bucket do Storage do Supabase usando o objeto de ficheiro direto
                 const { data, error } = await supabaseClient.storage
                     .from(bucketName)
-                    .upload(filePath, file);
+                    .upload(filePath, file, {
+                        cacheControl: '3600',
+                        upsert: true
+                    });
 
                 if (error) throw error;
 
+                // Captura URL pública em absoluto para evitar erros de leitura com chaves anónimas
                 const { data: publicData } = supabaseClient.storage
                     .from(bucketName)
                     .getPublicUrl(filePath);
@@ -1544,7 +1579,7 @@
                 const newMsg = {
                     sender_uid: currentUser.uid,
                     receiver_uid: activeChatUser.uid,
-                    content: `Partilhou um ficheiro do tipo: ${type}`,
+                    content: `Anexou um(a) ${type}`,
                     message_type: type,
                     media_url: fileUrl
                 };
@@ -1559,7 +1594,7 @@
                 await fetchMessagesForCurrentChat();
             } catch (err) {
                 console.error(err);
-                showCosmicToast("Erro de Upload", "Por favor certifique-se de que os buckets do Storage estão públicos no painel.", "error");
+                showCosmicToast("Erro de Upload", "Não foi possível carregar para o storage. Verifique as permissões de acesso do bucket.", "error");
             }
         }
 
@@ -1605,6 +1640,7 @@
                 const fileExt = file.name.split('.').pop();
                 const filePath = `avatars/${currentUser.uid}.${fileExt}`;
 
+                // Upload em substituição rápida (upsert)
                 const { data, error } = await supabaseClient.storage
                     .from('profile_photos')
                     .upload(filePath, file, { upsert: true });
@@ -1632,7 +1668,7 @@
                 showCosmicToast("Identidade Atualizada", "A sua foto de perfil foi guardada.", "success");
             } catch (err) {
                 console.error(err);
-                showCosmicToast("Erro ao Atualizar", "Certifique-se de que possui o bucket 'profile_photos' ativo.", "error");
+                showCosmicToast("Erro ao Atualizar", "Certifique-se de que o bucket 'profile_photos' está criado de forma pública no Supabase.", "error");
             }
         }
 
@@ -1821,6 +1857,9 @@
         }
 
         function handleRealtimeMessageInsert(msg) {
+            const isFromMe = msg.sender_uid === currentUser.uid;
+
+            // Se for para a conversa ativa que está aberta no ecrã
             if (activeChatUser && (
                 (msg.sender_uid === currentUser.uid && msg.receiver_uid === activeChatUser.uid) ||
                 (msg.sender_uid === activeChatUser.uid && msg.receiver_uid === currentUser.uid)
@@ -1829,14 +1868,25 @@
                     messagesList.push(msg);
                     renderMessages();
                 }
-            } else if (msg.receiver_uid === currentUser.uid) {
-                const sender = usersCache[msg.sender_uid];
+            } else if (!isFromMe && msg.receiver_uid === currentUser.uid) {
+                // Se a conversa NÃO estiver aberta e veio de outro utilizador, incrementa mensagens não lidas
+                const senderId = msg.sender_uid;
+                if (!unreadCountMap[senderId]) {
+                    unreadCountMap[senderId] = 0;
+                }
+                unreadCountMap[senderId] += 1;
+
+                // Mostra notificação visual toast
+                const sender = usersCache[senderId];
                 const senderName = sender ? sender.nick : 'Desconhecido';
-                showCosmicToast(`Mensagem de ${senderName}`, msg.content || "Enviou uma partilha multimédia", "info");
+                showCosmicToast(`Mensagem de ${senderName}`, msg.content || "Enviou um ficheiro cósmico", "info");
+
+                // Re-renderiza conversas para desenhar o distintivo verde (Badge)
+                renderConversationsList(Object.values(usersCache));
             }
 
-            // Ativa o áudio para qualquer nova mensagem recebida de outro utilizador
-            if (msg.sender_uid !== currentUser.uid && !seenMessagesIds.has(msg.uid)) {
+            // Ativa o som de forma fidedigna sempre que receber mensagens de outras pessoas
+            if (!isFromMe && !seenMessagesIds.has(msg.uid)) {
                 seenMessagesIds.add(msg.uid);
                 triggerMessageNotification();
             }
