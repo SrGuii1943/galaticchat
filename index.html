@@ -327,7 +327,7 @@
             <!-- PAINEL DE CHAT: CONVERSAS EM TEMPO REAL -->
             <div id="chat-content-container" class="hidden md:flex flex-1 flex-col h-full max-h-full bg-black/10 relative z-10 min-h-0 overflow-hidden">
                 
-                <!-- Estado Vazio / Mensagem de Boas-vindas (Apenas visível no computador quando nenhum chat está ativo) -->
+                <!-- Estado Vazio / Mensagem de Boas-vindas -->
                 <div id="chat-welcome-state" class="flex-1 flex flex-col items-center justify-center text-center p-8 space-y-4">
                     <div class="p-6 rounded-full bg-indigo-500/5 border border-indigo-500/10 animate-bounce">
                         <i data-lucide="message-square" class="w-16 h-16 text-indigo-400/50"></i>
@@ -336,7 +336,7 @@
                     <p class="text-xs text-gray-400 max-w-sm">Estabeleça uma ligação com outros viajantes espaciais para abrir um canal de mensagens criptografado.</p>
                 </div>
 
-                <!-- Canal de Mensagens Ativo (Otimizado com min-h-0 e flex-col de forma rígida) -->
+                <!-- Canal de Mensagens Ativo -->
                 <div id="chat-active-state" class="hidden flex-1 flex flex-col h-full max-h-full min-h-0 overflow-hidden">
                     
                     <!-- Cabeçalho do Chat Selecionado -->
@@ -380,7 +380,7 @@
                         </div>
                     </div>
 
-                    <!-- Visualizador de Histórico de Mensagens (min-h-0 e flex-1 asseguram rolagem perfeita no telemóvel) -->
+                    <!-- Visualizador de Histórico de Mensagens -->
                     <div id="messages-scroller" class="flex-1 overflow-y-auto p-4 space-y-4 bg-gradient-to-b from-transparent to-black/10 min-h-0">
                         <!-- Gerado via JS em tempo real -->
                     </div>
@@ -396,7 +396,7 @@
                         </button>
                     </div>
 
-                    <!-- Input e Envio de Mensagens (Fica firmemente posicionado no rodapé com flex-shrink-0) -->
+                    <!-- Input e Envio de Mensagens -->
                     <div class="p-3 border-t border-white/5 bg-black/30 flex flex-col gap-2 flex-shrink-0 pb-4">
                         <div class="flex items-center gap-2">
                             
@@ -593,8 +593,6 @@
         let blocksList = []; 
         let seenMessagesIds = new Set(); // Evita notificações e loops de áudio repetidos
         let unreadCountMap = {}; // Guarda número de mensagens não lidas por utilizador (uid -> quantidade)
-        let realTimeChannel = null; 
-        let userOnlineChannel = null; 
         let pollingInterval = null; // Intervalo para sondagem de redundância HTTP
 
         // Inicialização do Áudio de Notificação
@@ -689,24 +687,22 @@
                     
                     // Coordenadas cartesianas no plano galático
                     this.x = Math.cos(angle) * distance;
-                    this.y = (Math.random() * 0.1 - 0.05) * distance; // Espessura vertical do disco
+                    this.y = (Math.random() * 0.1 - 0.05) * distance; // Disc vertical thickness
                     this.z = Math.sin(angle) * distance;
 
                     this.size = Math.random() * 1.5 + 0.3;
                     this.color = this.getCosmicColor(distance);
                     this.alpha = Math.random() * 0.8 + 0.2;
-                    this.orbitSpeed = (Math.random() * 0.002 + 0.001) * (150 / (distance + 40)); // Velocidade de Kepler
+                    this.orbitSpeed = (Math.random() * 0.002 + 0.001) * (150 / (distance + 40)); // Kepler speed
                 }
                 getCosmicColor(distance) {
-                    // Núcleo brilhante (branco/amarelo) -> Braços (azul/magenta) -> Bordas (roxo)
                     const ratio = distance / (width * 0.45);
                     if (ratio < 0.15) return '#ffffff';
-                    if (ratio < 0.45) return '#a5b4fc'; // Azul claro
-                    if (ratio < 0.75) return '#d946ef'; // Magenta
-                    return '#6366f1'; // Roxo espacial
+                    if (ratio < 0.45) return '#a5b4fc'; 
+                    if (ratio < 0.75) return '#d946ef'; 
+                    return '#6366f1'; 
                 }
                 update() {
-                    // Rotação orbital em torno do eixo Y
                     const cosSpeed = Math.cos(this.orbitSpeed);
                     const sinSpeed = Math.sin(this.orbitSpeed);
                     
@@ -716,20 +712,17 @@
                     this.x = rx;
                     this.z = rz;
                     
-                    // Pulsação suave de brilho cósmico
                     this.alpha += (Math.random() * 0.04 - 0.02);
                     if (this.alpha > 1) this.alpha = 1;
                     if (this.alpha < 0.1) this.alpha = 0.1;
                 }
                 draw() {
-                    // Rotação em torno do eixo X para inclinar a perspetiva 3D da galáxia
                     const cosTilt = Math.cos(angleX);
                     const sinTilt = Math.sin(angleX);
                     
                     const rotY = this.y * cosTilt - this.z * sinTilt;
                     const rotZ = this.y * sinTilt + this.z * cosTilt;
                     
-                    // Projeção 3D para 2D com base no foco de profundidade (Z)
                     const scale = fov / (fov + rotZ);
                     const projX = (width / 2) + this.x * scale;
                     const projY = (height / 2) + rotY * scale;
@@ -756,7 +749,6 @@
             }
 
             function drawBrightCore() {
-                // Brilho intenso e dinâmico do buraco negro supermassivo central
                 ctx.save();
                 ctx.globalCompositeOperation = 'screen';
                 
@@ -774,11 +766,9 @@
             }
 
             function animate() {
-                // Limpeza suave com rasto dinâmico para simular efeitos de luz de velocidade
                 ctx.fillStyle = 'rgba(3, 0, 10, 0.25)';
                 ctx.fillRect(0, 0, width, height);
 
-                // Ativar renderização aditiva para simular luz brilhante intensa das estrelas
                 ctx.save();
                 ctx.globalCompositeOperation = 'screen';
                 stars.forEach(star => {
@@ -804,17 +794,16 @@
             try {
                 notificationSound.pause();
                 notificationSound.currentTime = 0;
-                // Força o carregamento do ficheiro de áudio para contornar restrições móveis
                 notificationSound.load();
                 
                 const playPromise = notificationSound.play();
                 if (playPromise !== undefined) {
                     playPromise.catch(err => {
-                        console.log("Áudio de notificação cósmica bloqueado pelas restrições do navegador:", err);
+                        console.log("Áudio de notificação cósmica bloqueado temporariamente:", err);
                     });
                 }
             } catch (err) {
-                console.warn("Erro ao reproduzir notificação sonora:", err);
+                console.warn("Erro ao reproduzir áudio:", err);
             }
         }
 
@@ -1057,33 +1046,78 @@
         async function loadConversations() {
             try {
                 // Procurar todos os utilizadores registados na rede para interação instantânea
-                const { data, error } = await supabaseClient
+                const { data: usersData, error: usersErr } = await supabaseClient
                     .from('galatic_users')
                     .select('*')
                     .neq('uid', currentUser.uid);
 
-                if (error) throw error;
+                if (usersErr) throw usersErr;
 
                 // Cache local de utilizadores
-                data.forEach(u => {
+                usersData.forEach(u => {
                     usersCache[u.uid] = u;
                 });
 
-                renderConversationsList(data);
+                // Procurar todas as mensagens envolvendo o utilizador logado para obter apenas conversas ativas
+                const { data: msgsData, error: msgsErr } = await supabaseClient
+                    .from('galatic_messages')
+                    .select('*')
+                    .or(`sender_uid.eq.${currentUser.uid},receiver_uid.eq.${currentUser.uid}`)
+                    .order('created_at', { ascending: true });
+
+                if (msgsErr) throw msgsErr;
+
+                // Mapear conversas ativas: contactUid -> timestamp da última mensagem
+                let activeChatsMap = {};
+                msgsData.forEach(msg => {
+                    const partnerUid = msg.sender_uid === currentUser.uid ? msg.receiver_uid : msg.sender_uid;
+                    activeChatsMap[partnerUid] = new Date(msg.created_at).getTime();
+                });
+
+                renderConversationsList(usersData, activeChatsMap);
             } catch (err) {
                 console.error(err);
             }
         }
 
-        function renderConversationsList(users) {
+        function renderConversationsList(users, activeChatsMap) {
             const container = document.getElementById('chats-list-container');
+            const searchInput = document.getElementById('search-contact-input');
+            const searchVal = searchInput ? searchInput.value.trim().toLowerCase() : "";
             
             // Grava a posição de rolamento antes de re-renderizar
             const scrollPos = container.scrollTop;
 
             container.innerHTML = "";
 
-            if (users.length === 0) {
+            let displayUsers = [];
+
+            if (searchVal === "") {
+                // Estilo WhatsApp: apenas mostra utilizadores com quem existe histórico ativo de mensagens
+                displayUsers = users.filter(user => activeChatsMap[user.uid] !== undefined);
+                
+                // Ordenar conversas ativas pela mensagem mais recente no topo
+                displayUsers.sort((a, b) => {
+                    const timeA = activeChatsMap[a.uid] || 0;
+                    const timeB = activeChatsMap[b.uid] || 0;
+                    return timeB - timeA;
+                });
+            } else {
+                // Modo de pesquisa ativo: exibe todos os utilizadores compatíveis do universo para que o possa encontrar
+                displayUsers = users.filter(user => {
+                    const nameMatch = user.nick.toLowerCase().includes(searchVal);
+                    const tagMatch = user.id_tag.toLowerCase().includes(searchVal);
+                    return nameMatch || tagMatch;
+                });
+                // Colocar utilizadores com conversa ativa no topo também nos resultados da pesquisa
+                displayUsers.sort((a, b) => {
+                    const hasChatA = activeChatsMap[a.uid] !== undefined ? 1 : 0;
+                    const hasChatB = activeChatsMap[b.uid] !== undefined ? 1 : 0;
+                    return hasChatB - hasChatA;
+                });
+            }
+
+            if (displayUsers.length === 0) {
                 container.innerHTML = `
                     <div class="flex flex-col items-center justify-center h-full text-center p-6 text-gray-400 space-y-2">
                         <i data-lucide="compass" class="w-8 h-8 text-indigo-400/40 animate-pulse"></i>
@@ -1093,7 +1127,7 @@
                 return;
             }
 
-            users.forEach(user => {
+            displayUsers.forEach(user => {
                 const isOnline = user.status === 'online';
                 const statusColor = isOnline ? 'bg-green-500' : 'bg-gray-500 animate-pulse';
                 
@@ -1146,17 +1180,8 @@
                 clearBtn.classList.remove('hidden');
             } else {
                 clearBtn.classList.add('hidden');
-                loadConversations();
-                return;
             }
-
-            const filtered = Object.values(usersCache).filter(user => {
-                const nameMatch = user.nick.toLowerCase().includes(searchVal);
-                const tagMatch = user.id_tag.toLowerCase().includes(searchVal);
-                return nameMatch || tagMatch;
-            });
-
-            renderConversationsList(filtered);
+            loadConversations();
         }
 
         function clearSearch() {
@@ -1195,13 +1220,14 @@
             // Força a atualização do layout responsivo com base no novo estado do chat ativo
             setupResponsiveLayout();
             
-            // Re-renderiza a lista para atualizar os distintivos de não lidas imediatamente
-            renderConversationsList(Object.values(usersCache));
+            // Re-renderiza a lista para atualizar as posições e o estado não lido instantaneamente
+            loadConversations();
         }
 
         function backToSidebar() {
             activeChatUser = null;
             setupResponsiveLayout();
+            loadConversations();
         }
 
         function updateBlockButtonUI() {
@@ -1389,6 +1415,9 @@
                 input.value = "";
                 cancelMessageReply();
                 await fetchMessagesForCurrentChat();
+                
+                // Atualizar lista lateral imediatamente para posicionar a conversa ativa no topo!
+                await loadConversations();
             } catch (err) {
                 console.error(err);
                 showCosmicToast("Falha de Envio", "Sinal cósmico interrompido.", "error");
@@ -1440,6 +1469,7 @@
 
                 showCosmicToast("Sinal Excluído", "Transmissão apagada de ambos os lados.", "success");
                 await fetchMessagesForCurrentChat();
+                await loadConversations();
             } catch (err) {
                 console.error(err);
             }
@@ -1470,6 +1500,7 @@
 
                 showCosmicToast("Limpeza Efetuada", "Histórico de envio apagado.", "success");
                 await fetchMessagesForCurrentChat();
+                await loadConversations();
             } catch (err) {
                 console.error(err);
             }
@@ -1489,6 +1520,7 @@
 
                 showCosmicToast("Canal Desintegrado", "Mensagens eliminadas para ambos os utilizadores.", "success");
                 await fetchMessagesForCurrentChat();
+                await loadConversations();
             } catch (err) {
                 console.error(err);
             }
@@ -1592,6 +1624,7 @@
 
                 showCosmicToast("Sucesso", "Ficheiro sintonizado no cosmos.", "success");
                 await fetchMessagesForCurrentChat();
+                await loadConversations();
             } catch (err) {
                 console.error(err);
                 showCosmicToast("Erro de Upload", "Não foi possível carregar para o storage. Verifique as permissões de acesso do bucket.", "error");
@@ -1666,6 +1699,7 @@
                 document.getElementById('my-avatar').src = avatarUrl;
 
                 showCosmicToast("Identidade Atualizada", "A sua foto de perfil foi guardada.", "success");
+                await loadConversations();
             } catch (err) {
                 console.error(err);
                 showCosmicToast("Erro ao Atualizar", "Certifique-se de que o bucket 'profile_photos' está criado de forma pública no Supabase.", "error");
@@ -1689,6 +1723,7 @@
 
                 showCosmicToast("Sincronizado", "A sua biografia foi sintonizada com sucesso.", "success");
                 closeSettingsPanel();
+                await loadConversations();
             } catch (err) {
                 console.error(err);
             }
@@ -1772,74 +1807,15 @@
             if (!supabaseClient) return;
 
             // Ativa o sistema de redundância imediatamente para garantir sincronização de alta velocidade em ambientes sandbox como o Canvas
+            // Isto substitui inteiramente as chamadas WebSocket que são bloqueadas de forma nativa por segurança.
             startPollingFallback();
-
-            // Subscrever canal para novas mensagens destinadas a mim via WebSockets com tratamento de erro
-            try {
-                realTimeChannel = supabaseClient.channel('schema-db-changes')
-                    .on(
-                        'postgres_changes',
-                        {
-                            event: 'INSERT',
-                            schema: 'public',
-                            table: 'galatic_messages'
-                        },
-                        (payload) => {
-                            handleRealtimeMessageInsert(payload.new);
-                        }
-                    )
-                    .on(
-                        'postgres_changes',
-                        {
-                            event: 'DELETE',
-                            schema: 'public',
-                            table: 'galatic_messages'
-                        },
-                        (payload) => {
-                            handleRealtimeMessageDelete(payload.old);
-                        }
-                    );
-
-                realTimeChannel.subscribe();
-            } catch (e) {
-                console.warn("WebSocket bloqueado ou indisponível:", e);
-            }
-
-            // Subscrever alterações de utilizadores
-            try {
-                userOnlineChannel = supabaseClient.channel('user-status-changes')
-                    .on(
-                        'postgres_changes',
-                        {
-                            event: 'UPDATE',
-                            schema: 'public',
-                            table: 'galatic_users'
-                        },
-                        (payload) => {
-                            const updatedUser = payload.new;
-                            if (usersCache[updatedUser.uid]) {
-                                usersCache[updatedUser.uid] = updatedUser;
-                                if (activeChatUser && activeChatUser.uid === updatedUser.uid) {
-                                    activeChatUser = updatedUser;
-                                    document.getElementById('active-status').innerText = updatedUser.status === 'online' ? 'Sincronizado (Online)' : 'Canal offline';
-                                    const indicator = document.getElementById('active-online-indicator');
-                                    indicator.className = `absolute bottom-0 right-0 w-3 h-3 border-2 border-black rounded-full ${updatedUser.status === 'online' ? 'bg-green-500' : 'bg-gray-500'}`;
-                                }
-                                renderConversationsList(Object.values(usersCache));
-                            }
-                        }
-                    );
-                userOnlineChannel.subscribe();
-            } catch (e) {
-                console.warn("WebSocket status bloqueado:", e);
-            }
         }
 
         /*
         * ==========================================
         * MECANISMO DE SONDAGEM HTTP DE REDUNDÂNCIA (POLLING)
         * ==========================================
-        * Ativado de forma automática e silenciosa se as conexões de WebSockets forem bloqueadas.
+        * Ativado de forma automática e silenciosa para puxar dados diretamente via requisições HTTP rápidas.
         * Reduzido para 1.5s para maior reatividade e entrega instantânea.
         */
         function startPollingFallback() {
@@ -1882,7 +1858,7 @@
                 showCosmicToast(`Mensagem de ${senderName}`, msg.content || "Enviou um ficheiro cósmico", "info");
 
                 // Re-renderiza conversas para desenhar o distintivo verde (Badge)
-                renderConversationsList(Object.values(usersCache));
+                loadConversations();
             }
 
             // Ativa o som de forma fidedigna sempre que receber mensagens de outras pessoas
@@ -1896,6 +1872,7 @@
             if (activeChatUser) {
                 messagesList = messagesList.filter(m => m.uid !== oldMsg.uid);
                 renderMessages();
+                loadConversations();
             }
         }
 
