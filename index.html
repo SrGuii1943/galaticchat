@@ -340,8 +340,9 @@
                     <!-- Cabeçalho do Chat Selecionado -->
                     <div class="p-4 border-b border-white/5 bg-black/20 flex items-center justify-between">
                         <div class="flex items-center gap-3">
-                            <button onclick="backToSidebar()" class="p-2 -ml-2 rounded-lg hover:bg-white/5 text-gray-400 transition" title="Voltar para a Lista">
+                            <button onclick="backToSidebar()" class="p-2 rounded-lg hover:bg-white/10 text-indigo-400 transition flex items-center gap-1" title="Voltar para a Lista">
                                 <i data-lucide="arrow-left" class="w-5 h-5"></i>
+                                <span class="text-xs font-semibold">Voltar</span>
                             </button>
                             <div class="relative cursor-pointer" onclick="openContactProfile()">
                                 <img id="active-avatar" src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=100" alt="Avatar" class="w-10 h-10 rounded-full object-cover border-2 border-indigo-500/30">
@@ -480,7 +481,7 @@
             </div>
             <div class="w-full bg-white/5 p-3 rounded-xl border border-white/5 text-left text-xs">
                 <span class="text-[10px] text-gray-400 block mb-1">Frequência de Status / Bio</span>
-                <p id="contact-p-bio" class="text-gray-200 font-medium">Apenas mais um viajante estelar no infinito.</p>
+                <p id="contact-p-bio" class="text-gray-200 font-medium">Apenas mais um explorador estelar no infinito.</p>
             </div>
             <div class="w-full flex justify-between text-[10px] text-gray-400 border-t border-white/5 pt-3">
                 <div>Desde: <span id="contact-p-created" class="text-gray-300">--/--/----</span></div>
@@ -621,6 +622,9 @@
                 if (!activeChatUser) {
                     welcomeState.classList.remove('hidden');
                     document.getElementById('chat-active-state').classList.add('hidden');
+                } else {
+                    welcomeState.classList.add('hidden');
+                    document.getElementById('chat-active-state').classList.remove('hidden');
                 }
             } else {
                 // Telemóvel: Mostra um de cada vez
@@ -629,9 +633,11 @@
                     sidebar.classList.add('hidden');
                     chatContainer.classList.remove('hidden');
                     chatContainer.classList.add('flex');
+                    document.getElementById('chat-active-state').classList.remove('hidden');
                 } else {
                     sidebar.classList.remove('hidden');
                     chatContainer.classList.add('hidden');
+                    document.getElementById('chat-active-state').classList.add('hidden');
                 }
             }
         }
@@ -1729,6 +1735,9 @@
         function setupGlobalRealtime() {
             if (!supabaseClient) return;
 
+            // Ativa o sistema de redundância imediatamente para garantir sincronização de alta velocidade em ambientes sandbox como o Canvas
+            startPollingFallback();
+
             // Subscrever canal para novas mensagens destinadas a mim via WebSockets com tratamento de erro
             try {
                 realTimeChannel = supabaseClient.channel('schema-db-changes')
@@ -1755,19 +1764,12 @@
                         }
                     );
 
-                realTimeChannel.subscribe((status, err) => {
-                    // Se a conexão WebSocket falhar ou for recusada pelo ambiente Sandbox
-                    if (status === 'CHANNEL_ERROR' || err) {
-                        console.warn("Conexão WebSocket bloqueada ou indisponível no Canvas. Ativando sondagem HTTP de redundância...");
-                        startPollingFallback();
-                    }
-                });
+                realTimeChannel.subscribe();
             } catch (e) {
-                console.warn("Erro ao iniciar o WebSocket de mensagens:", e);
-                startPollingFallback();
+                console.warn("WebSocket bloqueado ou indisponível:", e);
             }
 
-            // Subscrever alterações globais de utilizadores (Status/Bio/Avatar)
+            // Subscrever alterações de utilizadores
             try {
                 userOnlineChannel = supabaseClient.channel('user-status-changes')
                     .on(
@@ -1793,8 +1795,7 @@
                     );
                 userOnlineChannel.subscribe();
             } catch (e) {
-                console.warn("Erro ao iniciar o WebSocket de status de utilizadores:", e);
-                startPollingFallback();
+                console.warn("WebSocket status bloqueado:", e);
             }
         }
 
@@ -1803,11 +1804,12 @@
         * MECANISMO DE SONDAGEM HTTP DE REDUNDÂNCIA (POLLING)
         * ==========================================
         * Ativado de forma automática e silenciosa se as conexões de WebSockets forem bloqueadas.
+        * Reduzido para 1.5s para maior reatividade e entrega instantânea.
         */
         function startPollingFallback() {
             if (pollingInterval) return; // Garante que não criamos loops concorrentes
 
-            console.log("Sistema de sondagem estelar HTTP ativo a cada 3 segundos.");
+            console.log("Sistema de sondagem estelar HTTP ativo.");
             pollingInterval = setInterval(async () => {
                 // Atualiza mensagens se tivermos uma conversa ativa
                 if (activeChatUser) {
@@ -1815,7 +1817,7 @@
                 }
                 // Atualiza a lista global de utilizadores e status
                 await loadConversations();
-            }, 3000);
+            }, 1500); // 1.5 segundos para garantir atualização direta e ultra-veloz
         }
 
         function handleRealtimeMessageInsert(msg) {
