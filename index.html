@@ -162,15 +162,15 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* Gestão de transição de ecrãs */
+        /* Gestão de transição de ecrãs - Ajustado com !important para evitar conflito de classes utilitárias do Tailwind no ecrã principal */
         .app-screen {
-            display: none;
+            display: none !important;
             opacity: 0;
             transition: opacity 0.3s ease-in-out;
         }
 
         .app-screen.active {
-            display: flex;
+            display: flex !important;
             opacity: 1;
         }
 
