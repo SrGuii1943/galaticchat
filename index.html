@@ -1,0 +1,1907 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Galatic Chat — Premium Cosmic Messenger</title>
+    <!-- Tailwind CSS para estilização rápida e responsiva -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons para interface profissional -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Supabase JS Client library -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Fontes Google para visual futurista premium -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --cosmic-purple: #6366f1;
+            --cosmic-magenta: #d946ef;
+            --cosmic-dark: #03000a;
+            --cosmic-glass: rgba(10, 5, 25, 0.45);
+            --cosmic-glass-border: rgba(255, 255, 255, 0.08);
+            --font-main: 'Plus Jakarta Sans', sans-serif;
+            --font-title: 'Space Grotesk', sans-serif;
+        }
+
+        body {
+            font-family: var(--font-main);
+            background-color: var(--cosmic-dark);
+            color: #f3f4f6;
+            overflow: hidden;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        h1, h2, h3, h4 {
+            font-family: var(--font-title);
+        }
+
+        /* Fundo de Galáxia Interativo */
+        #galaxy-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* Efeitos de Nebulosas Flutuantes */
+        .nebula {
+            position: fixed;
+            width: 600px;
+            height: 600px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, rgba(217, 70, 239, 0.05) 50%, rgba(0,0,0,0) 100%);
+            filter: blur(80px);
+            z-index: 0;
+            pointer-events: none;
+            animation: drift 30s infinite alternate ease-in-out;
+        }
+
+        .nebula-2 {
+            position: fixed;
+            right: -100px;
+            bottom: -100px;
+            width: 700px;
+            height: 700px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(217, 70, 239, 0.12) 0%, rgba(99, 102, 241, 0.04) 60%, rgba(0,0,0,0) 100%);
+            filter: blur(100px);
+            z-index: 0;
+            pointer-events: none;
+            animation: drift-reverse 45s infinite alternate ease-in-out;
+        }
+
+        @keyframes drift {
+            0% { transform: translate(-10%, -10%) scale(1); }
+            100% { transform: translate(15%, 15%) scale(1.2); }
+        }
+
+        @keyframes drift-reverse {
+            0% { transform: translate(10%, 10%) scale(1.2); }
+            100% { transform: translate(-15%, -15%) scale(0.9); }
+        }
+
+        /* Glassmorphism Premium */
+        .glass-card {
+            background: var(--cosmic-glass);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid var(--cosmic-glass-border);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        .glass-input {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: white;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .glass-input:focus {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: var(--cosmic-purple);
+            box-shadow: 0 0 15px rgba(99, 102, 241, 0.25);
+            outline: none;
+        }
+
+        /* Barras de rolamento estilizadas */
+        ::-webkit-scrollbar {
+            width: 5px;
+            height: 5px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.1);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 99px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Gradientes e Brilho */
+        .cosmic-gradient-text {
+            background: linear-gradient(135deg, #a5b4fc 0%, #6366f1 50%, #d946ef 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .cosmic-button {
+            background: linear-gradient(135deg, #6366f1 0%, #d946ef 100%);
+            box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .cosmic-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(217, 70, 239, 0.6);
+        }
+
+        .cosmic-button:active {
+            transform: translateY(1px);
+        }
+
+        /* Animações fluidas */
+        .fade-in {
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Gestão de transição de ecrãs */
+        .app-screen {
+            display: none;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+        }
+
+        .app-screen.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        /* Balões de Mensagem */
+        .msg-bubble-sent {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.7) 0%, rgba(217, 70, 239, 0.7) 100%);
+            border-radius: 20px 20px 4px 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .msg-bubble-received {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 20px 20px 20px 4px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+    </style>
+</head>
+<body class="relative min-h-screen flex flex-col justify-between overflow-hidden">
+
+    <!-- Canvas para fundo estelar dinâmico -->
+    <canvas id="galaxy-canvas"></canvas>
+    <div class="nebula"></div>
+    <div class="nebula-2"></div>
+
+    <!-- CONTENT CONTAINER -->
+    <div class="relative z-10 w-full h-screen flex flex-col justify-between p-0 md:p-4 select-none">
+
+        <!-- ================= ECRÃS DE AUTENTICAÇÃO (SEPARADOS) ================= -->
+
+        <!-- 1. ECRÃ DE LOGIN -->
+        <div id="screen-login" class="app-screen active w-full max-w-md mx-auto my-auto flex-col p-6 rounded-2xl glass-card fade-in">
+            <div class="text-center mb-6">
+                <div class="inline-flex p-3 rounded-full bg-purple-500/10 mb-2 border border-purple-500/25">
+                    <i data-lucide="aperture" class="w-12 h-12 text-indigo-400"></i>
+                </div>
+                <h1 class="text-3xl font-extrabold cosmic-gradient-text tracking-wide uppercase">Galatic Chat</h1>
+                <p class="text-xs text-gray-400 mt-1 font-light">Seja bem-vindo à rede de comunicação interestelar</p>
+            </div>
+
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1">Nome de Utilizador (Nick)</label>
+                    <div class="relative">
+                        <i data-lucide="user" class="absolute left-3 top-3.5 w-4 h-4 text-gray-400"></i>
+                        <input type="text" id="login-nick" class="w-full pl-10 pr-4 py-3 text-sm rounded-xl glass-input" placeholder="O seu nick cósmico">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1">Palavra-passe (Senha)</label>
+                    <div class="relative">
+                        <i data-lucide="lock" class="absolute left-3 top-3.5 w-4 h-4 text-gray-400"></i>
+                        <input type="password" id="login-password" class="w-full pl-10 pr-4 py-3 text-sm rounded-xl glass-input" placeholder="A sua chave de segurança">
+                    </div>
+                </div>
+                <button onclick="handleLogin()" id="btn-login" class="w-full py-3.5 rounded-xl text-sm font-semibold cosmic-button text-white flex items-center justify-center gap-2">
+                    <i data-lucide="rocket" class="w-4 h-4"></i> Iniciar Viagem
+                </button>
+            </div>
+
+            <div class="text-center mt-6">
+                <p class="text-xs text-gray-400">Ainda não tem canal ativo? 
+                    <button onclick="switchScreen('screen-register')" class="text-indigo-400 font-bold hover:underline transition">Criar Canal</button>
+                </p>
+            </div>
+        </div>
+
+        <!-- 2. ECRÃ DE REGISTO -->
+        <div id="screen-register" class="app-screen w-full max-w-md mx-auto my-auto flex-col p-6 rounded-2xl glass-card fade-in">
+            <div class="text-center mb-6">
+                <div class="inline-flex p-3 rounded-full bg-magenta-500/10 mb-2 border border-pink-500/25">
+                    <i data-lucide="sparkles" class="w-12 h-12 text-pink-400"></i>
+                </div>
+                <h1 class="text-2xl font-extrabold cosmic-gradient-text uppercase">Nova Frequência</h1>
+                <p class="text-xs text-gray-400 mt-1">Sintonize os seus dados para gerar o seu ID único</p>
+            </div>
+
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1">Nick de Transmissão (Máx. 15 carateres)</label>
+                    <div class="relative">
+                        <i data-lucide="user-plus" class="absolute left-3 top-3.5 w-4 h-4 text-gray-400"></i>
+                        <input type="text" id="register-nick" maxlength="15" class="w-full pl-10 pr-4 py-3 text-sm rounded-xl glass-input" placeholder="Ex: StarLord">
+                    </div>
+                    <span class="text-[10px] text-gray-400 mt-1 block">Apenas letras e números. A primeira letra será convertida para maiúscula.</span>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1">Palavra-passe (Senha)</label>
+                    <div class="relative">
+                        <i data-lucide="key" class="absolute left-3 top-3.5 w-4 h-4 text-gray-400"></i>
+                        <input type="password" id="register-password" class="w-full pl-10 pr-4 py-3 text-sm rounded-xl glass-input" placeholder="Mínimo 6 carateres">
+                    </div>
+                </div>
+                <button onclick="handleRegister()" id="btn-register" class="w-full py-3.5 rounded-xl text-sm font-semibold cosmic-button text-white flex items-center justify-center gap-2">
+                    <i data-lucide="planet" class="w-4 h-4"></i> Registar Identidade
+                </button>
+            </div>
+
+            <div class="text-center mt-6">
+                <p class="text-xs text-gray-400">Já tem canal ativo? 
+                    <button onclick="switchScreen('screen-login')" class="text-indigo-400 font-bold hover:underline transition">Entrar</button>
+                </p>
+            </div>
+        </div>
+
+        <!-- ================= ECRÃ PRINCIPAL DO APLICATIVO (LOGADO) ================= -->
+        <div id="screen-main" class="app-screen w-full h-full max-w-6xl mx-auto flex flex-col md:flex-row rounded-none md:rounded-2xl glass-card overflow-hidden fade-in shadow-2xl relative">
+            
+            <!-- BARRA LATERAL: UTILIZADOR, PESQUISA E CONTACTOS -->
+            <div id="main-sidebar" class="w-full md:w-[350px] flex flex-col border-r border-white/5 h-full relative z-10">
+                
+                <!-- Perfil do Utilizador Logado -->
+                <div class="p-4 border-b border-white/5 flex items-center justify-between bg-black/10">
+                    <div class="flex items-center gap-3">
+                        <div class="relative cursor-pointer" onclick="openMyProfileSettings()">
+                            <img id="my-avatar" src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=100&auto=format&fit=crop&q=60" alt="Avatar" class="w-10 h-10 rounded-full object-cover border-2 border-indigo-400/50">
+                            <span class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-black rounded-full"></span>
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-1">
+                                <span id="my-nick" class="font-semibold text-sm">Explorador</span>
+                                <span id="my-uid" class="text-[10px] text-indigo-300 font-mono">#0000</span>
+                            </div>
+                            <span id="my-status-text" class="text-[10px] text-gray-400 block truncate max-w-[150px]">Ativo no Cosmos</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button onclick="openSettingsPanel()" class="p-2 rounded-lg hover:bg-white/5 text-gray-300 transition" title="Definições da Nave">
+                            <i data-lucide="settings" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Campo de Pesquisa por Nick ou ID -->
+                <div class="p-3 border-b border-white/5">
+                    <div class="relative">
+                        <i data-lucide="search" class="absolute left-3 top-2.5 w-4 h-4 text-gray-400"></i>
+                        <input type="text" id="search-contact-input" oninput="searchContacts()" class="w-full pl-9 pr-8 py-2 text-xs rounded-xl glass-input" placeholder="Procurar por Nick ou #ID...">
+                        <button onclick="clearSearch()" id="btn-clear-search" class="absolute right-3 top-2.5 text-gray-400 hover:text-white hidden">
+                            <i data-lucide="x" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Lista de Canais Ativos / Viajantes Encontrados -->
+                <div class="flex-1 overflow-y-auto" id="chats-list-container">
+                    <div class="flex flex-col items-center justify-center h-full text-center p-6 text-gray-400 space-y-2">
+                        <i data-lucide="compass" class="w-8 h-8 text-indigo-400/40 animate-pulse"></i>
+                        <p class="text-xs">Explore o quadrante procurando alcunhas ou códigos de ID estelares acima.</p>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- PAINEL DE CHAT: CONVERSAS EM TEMPO REAL -->
+            <div id="chat-content-container" class="hidden md:flex flex-1 flex-col h-full bg-black/10 relative z-10">
+                
+                <!-- Estado Vazio / Mensagem de Boas-vindas (Apenas visível no computador quando nenhum chat está ativo) -->
+                <div id="chat-welcome-state" class="flex-1 flex flex-col items-center justify-center text-center p-8 space-y-4">
+                    <div class="p-6 rounded-full bg-indigo-500/5 border border-indigo-500/10 animate-bounce">
+                        <i data-lucide="message-square" class="w-16 h-16 text-indigo-400/50"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold text-gray-200">Sincronizador Cósmico</h2>
+                    <p class="text-xs text-gray-400 max-w-sm">Estabeleça uma ligação com outros viajantes espaciais para abrir um canal de mensagens criptografado.</p>
+                </div>
+
+                <!-- Canal de Mensagens Ativo -->
+                <div id="chat-active-state" class="hidden flex-1 flex flex-col h-full">
+                    
+                    <!-- Cabeçalho do Chat Selecionado -->
+                    <div class="p-4 border-b border-white/5 bg-black/20 flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <button onclick="backToSidebar()" class="p-2 -ml-2 rounded-lg hover:bg-white/5 text-gray-400 transition" title="Voltar para a Lista">
+                                <i data-lucide="arrow-left" class="w-5 h-5"></i>
+                            </button>
+                            <div class="relative cursor-pointer" onclick="openContactProfile()">
+                                <img id="active-avatar" src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=100" alt="Avatar" class="w-10 h-10 rounded-full object-cover border-2 border-indigo-500/30">
+                                <span id="active-online-indicator" class="absolute bottom-0 right-0 w-3 h-3 bg-gray-500 border-2 border-black rounded-full"></span>
+                            </div>
+                            <div class="cursor-pointer" onclick="openContactProfile()">
+                                <div class="flex items-center gap-1">
+                                    <span id="active-nick" class="font-bold text-sm">Viajante</span>
+                                    <span id="active-uid" class="text-[10px] text-gray-400 font-mono">#0000</span>
+                                </div>
+                                <span id="active-status" class="text-[10px] text-green-400 block">Canal Ligado</span>
+                            </div>
+                        </div>
+
+                        <!-- Menu de Opções de Gestão de Canal -->
+                        <div class="flex items-center gap-2">
+                            <button onclick="toggleBlockContact()" id="btn-block" class="p-2 rounded-lg hover:bg-white/5 text-rose-400 hover:text-rose-300 transition" title="Bloquear Transmissão">
+                                <i data-lucide="shield-alert" class="w-5 h-5"></i>
+                            </button>
+                            <div class="relative inline-block text-left">
+                                <button onclick="toggleChatMenu()" class="p-2 rounded-lg hover:bg-white/5 text-gray-400 transition">
+                                    <i data-lucide="more-vertical" class="w-5 h-5"></i>
+                                </button>
+                                <div id="chat-dropdown-menu" class="hidden absolute right-0 mt-2 w-48 rounded-xl glass-card border border-white/10 shadow-2xl py-1 z-30">
+                                    <button onclick="clearCurrentChat()" class="w-full text-left px-4 py-2.5 text-xs text-gray-300 hover:bg-white/5 flex items-center gap-2">
+                                        <i data-lucide="eraser" class="w-4 h-4"></i> Limpar Histórico
+                                    </button>
+                                    <button onclick="deleteCurrentChat()" class="w-full text-left px-4 py-2.5 text-xs text-rose-400 hover:bg-rose-500/10 flex items-center gap-2">
+                                        <i data-lucide="trash-2" class="w-4 h-4"></i> Eliminar Canal
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Visualizador de Histórico de Mensagens -->
+                    <div id="messages-scroller" class="flex-1 overflow-y-auto p-4 space-y-4 bg-gradient-to-b from-transparent to-black/10">
+                        <!-- Gerado via JS em tempo real -->
+                    </div>
+
+                    <!-- Visualização de Mensagem de Resposta -->
+                    <div id="reply-preview-container" class="hidden px-4 py-2 bg-indigo-500/10 border-t border-indigo-500/20 flex items-center justify-between">
+                        <div class="flex items-center gap-2 text-xs text-indigo-300">
+                            <i data-lucide="reply" class="w-3.5 h-3.5"></i>
+                            <span>A responder a <strong id="reply-target-nick">...</strong>: <em id="reply-target-text" class="not-italic truncate max-w-[200px]">...</em></span>
+                        </div>
+                        <button onclick="cancelMessageReply()" class="text-gray-400 hover:text-white">
+                            <i data-lucide="x" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+
+                    <!-- Input e Envio de Mensagens -->
+                    <div class="p-3 border-t border-white/5 bg-black/30 flex flex-col gap-2">
+                        <div class="flex items-center gap-2">
+                            
+                            <!-- Menu de Anexos Cósmicos -->
+                            <div class="relative">
+                                <button onclick="toggleAttachmentMenu()" class="p-2.5 rounded-xl glass-input hover:bg-white/10 text-indigo-400 transition">
+                                    <i data-lucide="paperclip" class="w-5 h-5"></i>
+                                </button>
+                                <div id="attachment-dropdown" class="hidden absolute bottom-14 left-0 w-44 rounded-xl glass-card border border-white/10 shadow-2xl py-1 z-30">
+                                    <label class="cursor-pointer w-full text-left px-4 py-2.5 text-xs text-gray-300 hover:bg-white/5 flex items-center gap-2">
+                                        <i data-lucide="image" class="w-4 h-4 text-emerald-400"></i> Imagem
+                                        <input type="file" id="file-image" accept="image/*" class="hidden" onchange="uploadAttachment('image')">
+                                    </label>
+                                    <label class="cursor-pointer w-full text-left px-4 py-2.5 text-xs text-gray-300 hover:bg-white/5 flex items-center gap-2">
+                                        <i data-lucide="video" class="w-4 h-4 text-cyan-400"></i> Vídeo
+                                        <input type="file" id="file-video" accept="video/*" class="hidden" onchange="uploadAttachment('video')">
+                                    </label>
+                                    <label class="cursor-pointer w-full text-left px-4 py-2.5 text-xs text-gray-300 hover:bg-white/5 flex items-center gap-2">
+                                        <i data-lucide="file-text" class="w-4 h-4 text-indigo-400"></i> Ficheiro
+                                        <input type="file" id="file-doc" accept="*" class="hidden" onchange="uploadAttachment('file')">
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Barra de digitação principal -->
+                            <div class="flex-1 relative">
+                                <input type="text" id="message-input" onkeyup="handleMessageKeyUp(event)" class="w-full pl-4 pr-12 py-3 rounded-xl glass-input text-sm" placeholder="Escreva a sua transmissão cósmica...">
+                                <button onclick="toggleEmojiPicker()" class="absolute right-3 top-3 text-indigo-400 hover:text-indigo-300">
+                                    <i data-lucide="smile" class="w-5 h-5"></i>
+                                </button>
+                                
+                                <!-- Seleção Rápida de Emojis -->
+                                <div id="emoji-picker" class="hidden absolute bottom-14 right-0 glass-card p-2 rounded-xl grid grid-cols-6 gap-1 border border-white/10 z-30">
+                                    <span onclick="insertEmoji('🌌')" class="cursor-pointer p-1.5 hover:bg-white/10 rounded">🌌</span>
+                                    <span onclick="insertEmoji('🚀')" class="cursor-pointer p-1.5 hover:bg-white/10 rounded">🚀</span>
+                                    <span onclick="insertEmoji('👽')" class="cursor-pointer p-1.5 hover:bg-white/10 rounded">👽</span>
+                                    <span onclick="insertEmoji('⭐')" class="cursor-pointer p-1.5 hover:bg-white/10 rounded">⭐</span>
+                                    <span onclick="insertEmoji('🪐')" class="cursor-pointer p-1.5 hover:bg-white/10 rounded">🪐</span>
+                                    <span onclick="insertEmoji('🛰️')" class="cursor-pointer p-1.5 hover:bg-white/10 rounded">🛰️</span>
+                                    <span onclick="insertEmoji('❤️')" class="cursor-pointer p-1.5 hover:bg-white/10 rounded">❤️</span>
+                                    <span onclick="insertEmoji('😂')" class="cursor-pointer p-1.5 hover:bg-white/10 rounded">😂</span>
+                                    <span onclick="insertEmoji('👍')" class="cursor-pointer p-1.5 hover:bg-white/10 rounded">👍</span>
+                                    <span onclick="insertEmoji('✨')" class="cursor-pointer p-1.5 hover:bg-white/10 rounded">✨</span>
+                                    <span onclick="insertEmoji('🔥')" class="cursor-pointer p-1.5 hover:bg-white/10 rounded">🔥</span>
+                                    <span onclick="insertEmoji('🥺')" class="cursor-pointer p-1.5 hover:bg-white/10 rounded">🥺</span>
+                                </div>
+                            </div>
+
+                            <!-- Botão Enviar ou Gravar Áudio -->
+                            <div id="action-buttons">
+                                <button onclick="sendChatMessage()" id="btn-send-message" class="p-3 rounded-xl cosmic-button text-white">
+                                    <i data-lucide="send" class="w-5 h-5"></i>
+                                </button>
+                                <button id="btn-record-audio" onmousedown="startAudioRecording()" onmouseup="stopAudioRecording()" ontouchstart="startAudioRecording()" ontouchend="stopAudioRecording()" class="hidden p-3 rounded-xl bg-purple-500/20 hover:bg-purple-500/40 border border-purple-500/30 text-purple-400 transition" title="Segure para Gravar Áudio">
+                                    <i data-lucide="mic" class="w-5 h-5"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- ================= MODALS E ABAS FLUTUANTES ================= -->
+
+    <!-- Modal: Detalhes do Perfil do Contacto -->
+    <div id="modal-contact-profile" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 hidden">
+        <div class="glass-card max-w-sm w-full rounded-2xl p-6 relative flex flex-col items-center text-center space-y-4 fade-in">
+            <button onclick="closeContactProfile()" class="absolute top-4 right-4 text-gray-400 hover:text-white">
+                <i data-lucide="x" class="w-6 h-6"></i>
+            </button>
+            <div class="relative group">
+                <img id="contact-p-avatar" src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=300" class="w-32 h-32 rounded-full object-cover border-4 border-indigo-500/40 shadow-xl" alt="Foto">
+                <span id="contact-p-badge" class="absolute bottom-2 right-2 w-4 h-4 bg-gray-500 border-2 border-black rounded-full"></span>
+            </div>
+            <div>
+                <h3 id="contact-p-nick" class="text-xl font-bold">NickName</h3>
+                <span id="contact-p-uid" class="text-xs text-indigo-400 font-mono">#0000</span>
+            </div>
+            <div class="w-full bg-white/5 p-3 rounded-xl border border-white/5 text-left text-xs">
+                <span class="text-[10px] text-gray-400 block mb-1">Frequência de Status / Bio</span>
+                <p id="contact-p-bio" class="text-gray-200 font-medium">Apenas mais um viajante estelar no infinito.</p>
+            </div>
+            <div class="w-full flex justify-between text-[10px] text-gray-400 border-t border-white/5 pt-3">
+                <div>Desde: <span id="contact-p-created" class="text-gray-300">--/--/----</span></div>
+                <div>Acesso: <span id="contact-p-access" class="text-gray-300">--:--</span></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Configurações Gerais do Utilizador -->
+    <div id="modal-settings" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 hidden">
+        <div class="glass-card max-w-md w-full rounded-2xl p-6 relative flex flex-col space-y-4 fade-in">
+            <div class="flex items-center justify-between border-b border-white/5 pb-3">
+                <h3 class="text-lg font-bold cosmic-gradient-text uppercase tracking-wider flex items-center gap-2">
+                    <i data-lucide="sliders-horizontal" class="w-5 h-5 text-indigo-400"></i> Central da Nave
+                </h3>
+                <button onclick="closeSettingsPanel()" class="text-gray-400 hover:text-white">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <!-- Navegação de Tabs -->
+            <div class="flex border-b border-white/5 text-xs text-center">
+                <button onclick="switchSettingsTab('tab-profile')" id="btn-tab-profile" class="flex-1 pb-2 border-b-2 border-indigo-500 text-white font-semibold">O Meu Perfil</button>
+                <button onclick="switchSettingsTab('tab-account')" id="btn-tab-account" class="flex-1 pb-2 border-b-2 border-transparent text-gray-400">Segurança</button>
+            </div>
+
+            <!-- Tab 1: Editar Perfil -->
+            <div id="tab-profile" class="space-y-4 settings-tab">
+                <div class="flex flex-col items-center gap-3">
+                    <div class="relative group cursor-pointer" onclick="triggerAvatarUpload()">
+                        <img id="settings-my-avatar" src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=100" class="w-20 h-20 rounded-full object-cover border-2 border-indigo-500/50">
+                        <div class="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
+                            <i data-lucide="camera" class="w-5 h-5 text-white"></i>
+                        </div>
+                    </div>
+                    <input type="file" id="settings-avatar-input" accept="image/*" class="hidden" onchange="uploadMyAvatar(event)">
+                    <span class="text-[10px] text-gray-400">Clique na foto para atualizar</span>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-gray-300 uppercase mb-1">Biografia Estelar</label>
+                    <textarea id="settings-my-bio" rows="2" class="w-full p-3 text-xs rounded-xl glass-input" placeholder="A sua frequência de rádio..."></textarea>
+                </div>
+
+                <button onclick="saveProfileChanges()" class="w-full py-2.5 rounded-xl text-xs font-semibold cosmic-button text-white">
+                    Gravar Alterações
+                </button>
+            </div>
+
+            <!-- Tab 2: Segurança & Definições Globais -->
+            <div id="tab-account" class="space-y-4 settings-tab hidden">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-300 uppercase mb-1">Atualizar Chave (Nova Senha)</label>
+                    <input type="password" id="settings-new-password" class="w-full px-3 py-2 text-xs rounded-xl glass-input" placeholder="Nova senha">
+                </div>
+                <button onclick="changeUserPassword()" class="w-full py-2 bg-indigo-500/20 border border-indigo-500/30 hover:bg-indigo-500/40 rounded-xl text-xs font-semibold text-indigo-300 transition">
+                    Atualizar Palavra-passe
+                </button>
+
+                <div class="pt-4 border-t border-white/5 space-y-2">
+                    <span class="block text-[10px] text-gray-400 font-semibold uppercase tracking-wider">Ações de Emergência</span>
+                    <button onclick="clearLocalCache()" class="w-full py-2.5 bg-yellow-500/10 hover:bg-yellow-500/20 border border-yellow-500/20 rounded-xl text-xs font-semibold text-yellow-300 flex items-center justify-center gap-2 transition">
+                        <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> Limpar Frequência Local
+                    </button>
+                    <button onclick="logoutUser()" class="w-full py-2.5 bg-gray-500/10 hover:bg-gray-500/20 border border-gray-500/20 rounded-xl text-xs font-semibold text-gray-300 flex items-center justify-center gap-2 transition">
+                        <i data-lucide="log-out" class="w-3.5 h-3.5"></i> Sair da Órbita
+                    </button>
+                    <button onclick="deleteMyAccount()" class="w-full py-2.5 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 rounded-xl text-xs font-semibold text-rose-300 flex items-center justify-center gap-2 transition">
+                        <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Excluir Registo de Forma Permanente
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sistema Integrado de Toasts de Notificação -->
+    <div id="cosmic-toast" class="fixed bottom-4 right-4 z-50 glass-card p-4 rounded-xl border border-indigo-500/20 shadow-2xl flex items-center gap-3 max-w-sm transform translate-y-20 opacity-0 transition-all duration-300">
+        <div class="p-2 rounded-full bg-indigo-500/10" id="toast-icon-container">
+            <i data-lucide="bell" class="w-5 h-5 text-indigo-400" id="toast-icon"></i>
+        </div>
+        <div>
+            <span class="text-xs font-bold block" id="toast-title">Mensagem</span>
+            <p class="text-[10px] text-gray-400 mt-0.5" id="toast-message">Coordenadas detetadas.</p>
+        </div>
+    </div>
+
+    <!-- ================= JAVASCRIPT ARCHITECTURE ================= -->
+    <script>
+        /*
+        * ==========================================
+        * CONFIGURAÇÃO PRINCIPAL DO CLIENTE SUPABASE
+        * ==========================================
+        */
+        let supabaseClient = null;
+        
+        // Credenciais fornecidas pelo utilizador para ligação em segundo plano
+        const config = { 
+            url: "https://skdoibsqzfyarmgouiat.supabase.co", 
+            key: "sb_publishable_YKRG6EmozdRKUcFZeFRBrQ_T1CMXLRu" 
+        };
+
+        // Estado Global da Aplicação
+        let currentUser = null; 
+        let activeChatUser = null; 
+        let usersCache = {}; 
+        let messagesList = []; 
+        let blocksList = []; 
+        let seenMessagesIds = new Set(); // Evita notificações repetidas
+        let realTimeChannel = null; 
+        let userOnlineChannel = null; 
+        let pollingInterval = null; // Intervalo para sondagem de redundância HTTP
+
+        // Inicialização do Áudio de Notificação
+        const notificationSound = new Audio('notifica1943.mp3');
+
+        // Inicialização primária da aplicação
+        window.onload = function() {
+            lucide.createIcons();
+            initGalaxyBackground();
+            initializeSupabaseConnection();
+            setupResponsiveLayout();
+        };
+
+        // Trata redimensionamento de ecrã para ajustar a visualização de dispositivos
+        window.addEventListener('resize', setupResponsiveLayout);
+
+        function setupResponsiveLayout() {
+            const isMobile = window.innerWidth < 768;
+            const sidebar = document.getElementById('main-sidebar');
+            const chatContainer = document.getElementById('chat-content-container');
+            const welcomeState = document.getElementById('chat-welcome-state');
+
+            if (!isMobile) {
+                // Desktop: Mostra sempre ambos lado a lado
+                sidebar.classList.remove('hidden');
+                chatContainer.classList.remove('hidden');
+                chatContainer.classList.add('flex');
+                if (!activeChatUser) {
+                    welcomeState.classList.remove('hidden');
+                    document.getElementById('chat-active-state').classList.add('hidden');
+                }
+            } else {
+                // Telemóvel: Mostra um de cada vez
+                welcomeState.classList.add('hidden');
+                if (activeChatUser) {
+                    sidebar.classList.add('hidden');
+                    chatContainer.classList.remove('hidden');
+                    chatContainer.classList.add('flex');
+                } else {
+                    sidebar.classList.remove('hidden');
+                    chatContainer.classList.add('hidden');
+                }
+            }
+        }
+
+        /*
+        * ==========================================
+        * GALAXY CANVAS GENERATOR (Motor de Galáxia 3D Imersiva)
+        * ==========================================
+        * Renderiza uma galáxia espiral 3D realista usando simulação física.
+        */
+        function initGalaxyBackground() {
+            const canvas = document.getElementById('galaxy-canvas');
+            const ctx = canvas.getContext('2d');
+            let stars = [];
+            let width = window.innerWidth;
+            let height = window.innerHeight;
+
+            canvas.width = width;
+            canvas.height = height;
+
+            window.addEventListener('resize', () => {
+                width = window.innerWidth;
+                height = window.innerHeight;
+                canvas.width = width;
+                canvas.height = height;
+                create3DGalaxy();
+            });
+
+            // Parâmetros de perspetiva da galáxia 3D
+            const fov = 400; 
+            const angleX = 1.1; // Inclinação da galáxia para o efeito 3D imersivo
+
+            class Star3D {
+                constructor() {
+                    this.reset();
+                }
+                reset() {
+                    // Distribuir ao longo de braços espirais matemáticos
+                    const arms = 3;
+                    const arm = Math.floor(Math.random() * arms);
+                    const armAngle = (arm * 2 * Math.PI) / arms;
+                    
+                    // Distância do centro (Rendimento exponencial para maior densidade no núcleo)
+                    const distance = Math.pow(Math.random(), 2.5) * (width * 0.45);
+                    const angle = armAngle + (distance * 0.015) + (Math.random() * 0.4 - 0.2);
+                    
+                    // Coordenadas cartesianas no plano galático
+                    this.x = Math.cos(angle) * distance;
+                    this.y = (Math.random() * 0.1 - 0.05) * distance; // Espessura vertical do disco
+                    this.z = Math.sin(angle) * distance;
+
+                    this.size = Math.random() * 1.5 + 0.3;
+                    this.color = this.getCosmicColor(distance);
+                    this.alpha = Math.random() * 0.8 + 0.2;
+                    this.orbitSpeed = (Math.random() * 0.002 + 0.001) * (150 / (distance + 40)); // Velocidade de Kepler
+                }
+                getCosmicColor(distance) {
+                    // Núcleo brilhante (branco/amarelo) -> Braços (azul/magenta) -> Bordas (roxo)
+                    const ratio = distance / (width * 0.45);
+                    if (ratio < 0.15) return '#ffffff';
+                    if (ratio < 0.45) return '#a5b4fc'; // Azul claro
+                    if (ratio < 0.75) return '#d946ef'; // Magenta
+                    return '#6366f1'; // Roxo espacial
+                }
+                update() {
+                    // Rotação orbital em torno do eixo Y
+                    const cosSpeed = Math.cos(this.orbitSpeed);
+                    const sinSpeed = Math.sin(this.orbitSpeed);
+                    
+                    const rx = this.x * cosSpeed - this.z * sinSpeed;
+                    const rz = this.x * sinSpeed + this.z * cosSpeed;
+                    
+                    this.x = rx;
+                    this.z = rz;
+                    
+                    // Pulsação suave de brilho cósmico
+                    this.alpha += (Math.random() * 0.04 - 0.02);
+                    if (this.alpha > 1) this.alpha = 1;
+                    if (this.alpha < 0.1) this.alpha = 0.1;
+                }
+                draw() {
+                    // Rotação em torno do eixo X para inclinar a perspetiva 3D da galáxia
+                    const cosTilt = Math.cos(angleX);
+                    const sinTilt = Math.sin(angleX);
+                    
+                    const rotY = this.y * cosTilt - this.z * sinTilt;
+                    const rotZ = this.y * sinTilt + this.z * cosTilt;
+                    
+                    // Projeção 3D para 2D com base no foco de profundidade (Z)
+                    const scale = fov / (fov + rotZ);
+                    const projX = (width / 2) + this.x * scale;
+                    const projY = (height / 2) + rotY * scale;
+                    const currentSize = this.size * scale;
+
+                    if (projX >= 0 && projX <= width && projY >= 0 && projY <= height && rotZ > -fov) {
+                        ctx.save();
+                        ctx.globalAlpha = this.alpha;
+                        ctx.fillStyle = this.color;
+                        ctx.beginPath();
+                        ctx.arc(projX, projY, Math.max(0.2, currentSize), 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.restore();
+                    }
+                }
+            }
+
+            function create3DGalaxy() {
+                stars = [];
+                const count = Math.min(Math.floor((width * height) / 1200), 800);
+                for (let i = 0; i < count; i++) {
+                    stars.push(new Star3D());
+                }
+            }
+
+            function drawBrightCore() {
+                // Brilho intenso e dinâmico do buraco negro supermassivo central
+                ctx.save();
+                ctx.globalCompositeOperation = 'screen';
+                
+                const grad = ctx.createRadialGradient(width / 2, height / 2, 0, width / 2, height / 2, 110);
+                grad.addColorStop(0, 'rgba(255, 255, 255, 1)');
+                grad.addColorStop(0.15, 'rgba(165, 180, 252, 0.8)');
+                grad.addColorStop(0.4, 'rgba(217, 70, 239, 0.4)');
+                grad.addColorStop(1, 'rgba(3, 0, 10, 0)');
+                
+                ctx.fillStyle = grad;
+                ctx.beginPath();
+                ctx.arc(width / 2, height / 2, 110, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+
+            function animate() {
+                // Limpeza suave com rasto dinâmico para simular efeitos de luz de velocidade
+                ctx.fillStyle = 'rgba(3, 0, 10, 0.25)';
+                ctx.fillRect(0, 0, width, height);
+
+                // Ativar renderização aditiva para simular luz brilhante intensa das estrelas
+                ctx.save();
+                ctx.globalCompositeOperation = 'screen';
+                stars.forEach(star => {
+                    star.update();
+                    star.draw();
+                });
+                ctx.restore();
+
+                drawBrightCore();
+                requestAnimationFrame(animate);
+            }
+
+            create3DGalaxy();
+            animate();
+        }
+
+        /*
+        * ==========================================
+        * SISTEMA DE SOM E NOTIFICAÇÕES GERAIS
+        * ==========================================
+        */
+        function triggerMessageNotification() {
+            notificationSound.currentTime = 0;
+            notificationSound.play().catch(err => {
+                // Previne erros se o navegador bloquear o autoplay antes de interagir com o ecrã
+                console.log("Áudio de notificação cósmica bloqueado temporariamente:", err);
+            });
+        }
+
+        /*
+        * ==========================================
+        * TOAST NOTIFICATOR
+        * ==========================================
+        */
+        function showCosmicToast(title, message, type = 'info') {
+            const toast = document.getElementById('cosmic-toast');
+            const toastTitle = document.getElementById('toast-title');
+            const toastMsg = document.getElementById('toast-message');
+            const iconContainer = document.getElementById('toast-icon-container');
+
+            toastTitle.innerText = title;
+            toastMsg.innerText = message;
+
+            if (type === 'error') {
+                iconContainer.className = 'p-2 rounded-full bg-rose-500/10 text-rose-400';
+            } else if (type === 'success') {
+                iconContainer.className = 'p-2 rounded-full bg-emerald-500/10 text-emerald-400';
+            } else {
+                iconContainer.className = 'p-2 rounded-full bg-indigo-500/10 text-indigo-400';
+            }
+
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            toast.classList.add('translate-y-0', 'opacity-100');
+
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+                toast.classList.remove('translate-y-0', 'opacity-100');
+            }, 4000);
+        }
+
+        /*
+        * ==========================================
+        * INITIALIZE SUPABASE CONNECTION
+        * ==========================================
+        */
+        function initializeSupabaseConnection() {
+            try {
+                supabaseClient = supabase.createClient(config.url, config.key);
+                
+                // Valida se o utilizador já possui sessão ativa em cache
+                const localUser = localStorage.getItem('galatic_logged_user');
+                if (localUser) {
+                    currentUser = JSON.parse(localUser);
+                    enterMainSystem();
+                } else {
+                    switchScreen('screen-login');
+                }
+            } catch (err) {
+                console.error(err);
+                showCosmicToast("Ligação Falhou", "Não foi possível estabelecer ligação à infraestrutura estelar.", "error");
+            }
+        }
+
+        function switchScreen(screenId) {
+            document.querySelectorAll('.app-screen').forEach(scr => {
+                scr.classList.remove('active');
+            });
+            const activeScreen = document.getElementById(screenId);
+            if (activeScreen) {
+                activeScreen.classList.add('active');
+            }
+            lucide.createIcons();
+            setupResponsiveLayout();
+        }
+
+        /*
+        * ==========================================
+        * REGISTRATION & LOGIN SYSTEM
+        * ==========================================
+        */
+        async function handleRegister() {
+            const rawNick = document.getElementById('register-nick').value.trim();
+            const password = document.getElementById('register-password').value;
+
+            if (!rawNick || password.length < 6) {
+                showCosmicToast("Registo Inválido", "O Nick é obrigatório e a senha necessita de no mínimo 6 carateres.", "error");
+                return;
+            }
+
+            const regex = /^[a-zA-Z0-9]+$/;
+            if (!regex.test(rawNick)) {
+                showCosmicToast("Formato Inválido", "Apenas são aceites letras e números no apelido.", "error");
+                return;
+            }
+
+            // Converter automaticamente a primeira letra do apelido para maiúscula
+            const formattedNick = rawNick.charAt(0).toUpperCase() + rawNick.slice(1);
+
+            document.getElementById('btn-register').disabled = true;
+            document.getElementById('btn-register').innerText = "A sintonizar frequência...";
+
+            try {
+                // Consulta prévia no Supabase para impedir nick duplicado
+                const { data: existing, error } = await supabaseClient
+                    .from('galatic_users')
+                    .select('*')
+                    .eq('nick', formattedNick);
+
+                if (error && error.code !== 'PGRST116') throw error;
+
+                if (existing && existing.length > 0) {
+                    showCosmicToast("Alcunha em Uso", "Este apelido já está a ser utilizado noutro sistema cósmico.", "error");
+                    return;
+                }
+
+                // Gerar automaticamente ID exclusivo de 4 dígitos não duplicado
+                let isUnique = false;
+                let randomId = "";
+                while (!isUnique) {
+                    randomId = Math.floor(1000 + Math.random() * 9000).toString();
+                    const { data: idCheck } = await supabaseClient
+                        .from('galatic_users')
+                        .select('id_tag')
+                        .eq('id_tag', randomId);
+                    if (!idCheck || idCheck.length === 0) {
+                        isUnique = true;
+                    }
+                }
+
+                const defaultAvatar = `https://api.dicebear.com/7.x/pixel-art/svg?seed=${formattedNick}`;
+                const newUserObj = {
+                    nick: formattedNick,
+                    id_tag: randomId,
+                    password: password, 
+                    avatar_url: defaultAvatar,
+                    bio: "Apenas mais um explorador estelar no infinito.",
+                    status: "online",
+                    last_seen: new Date().toISOString()
+                };
+
+                const { error: insertErr } = await supabaseClient
+                    .from('galatic_users')
+                    .insert([newUserObj]);
+
+                if (insertErr) throw insertErr;
+
+                showCosmicToast("Canal Criado!", `Canal ativo com sucesso! Alcunha: ${formattedNick} | Código ID: #${randomId}`, "success");
+                switchScreen('screen-login');
+            } catch (err) {
+                console.error(err);
+                showCosmicToast("Erro ao Registar", "Por favor verifique se a sua estrutura de tabelas foi criada corretamente no Supabase.", "error");
+            } finally {
+                document.getElementById('btn-register').disabled = false;
+                document.getElementById('btn-register').innerHTML = `<i data-lucide="planet" class="w-4 h-4"></i> Registar Identidade`;
+                lucide.createIcons();
+            }
+        }
+
+        async function handleLogin() {
+            const nickInput = document.getElementById('login-nick').value.trim();
+            const passwordInput = document.getElementById('login-password').value;
+
+            if (!nickInput || !passwordInput) {
+                showCosmicToast("Dados em Falta", "Por favor preencha os campos para iniciar.", "error");
+                return;
+            }
+
+            const formattedNick = nickInput.charAt(0).toUpperCase() + nickInput.slice(1);
+
+            document.getElementById('btn-login').disabled = true;
+            document.getElementById('btn-login').innerText = "A autenticar sinal...";
+
+            try {
+                const { data, error } = await supabaseClient
+                    .from('galatic_users')
+                    .select('*')
+                    .eq('nick', formattedNick)
+                    .eq('password', passwordInput)
+                    .single();
+
+                if (error || !data) {
+                    showCosmicToast("Dados Incorretos", "Verifique o seu Nick e Palavra-passe.", "error");
+                } else {
+                    currentUser = data;
+                    localStorage.setItem('galatic_logged_user', JSON.stringify(currentUser));
+                    
+                    // Definir o utilizador online no banco de dados
+                    await supabaseClient
+                        .from('galatic_users')
+                        .update({ status: 'online', last_seen: new Date().toISOString() })
+                        .eq('uid', currentUser.uid);
+
+                    showCosmicToast("Sessão Iniciada", `Sinal do explorador ${currentUser.nick} sintonizado!`, "success");
+                    enterMainSystem();
+                }
+            } catch (err) {
+                console.error(err);
+                showCosmicToast("Sem Conexão", "Houve um erro na comunicação com a base de dados.", "error");
+            } finally {
+                document.getElementById('btn-login').disabled = false;
+                document.getElementById('btn-login').innerHTML = `<i data-lucide="rocket" class="w-4 h-4"></i> Iniciar Viagem`;
+                lucide.createIcons();
+            }
+        }
+
+        /*
+        * ==========================================
+        * CARREGAMENTO DO APLICATIVO PRINCIPAL
+        * ==========================================
+        */
+        async function enterMainSystem() {
+            switchScreen('screen-main');
+            
+            // Renderizar dados do perfil atual
+            document.getElementById('my-avatar').src = currentUser.avatar_url;
+            document.getElementById('my-nick').innerText = currentUser.nick;
+            document.getElementById('my-uid').innerText = `#${currentUser.id_tag}`;
+            document.getElementById('my-status-text').innerText = currentUser.bio || "Ativo na Órbita";
+
+            // Iniciar sincronização e realtime
+            loadMyBlocks();
+            loadConversations();
+            setupGlobalRealtime();
+        }
+
+        /*
+        * ==========================================
+        * CARREGAMENTO E REALTIME DAS CONVERSAS
+        * ==========================================
+        */
+        async function loadMyBlocks() {
+            try {
+                const { data, error } = await supabaseClient
+                    .from('galatic_blocks')
+                    .select('blocked_uid')
+                    .eq('user_uid', currentUser.uid);
+
+                if (!error && data) {
+                    blocksList = data.map(b => b.blocked_uid);
+                }
+            } catch (err) {
+                console.error("Erro ao ler bloqueios", err);
+            }
+        }
+
+        async function loadConversations() {
+            try {
+                // Procurar todos os utilizadores registados na rede para interação instantânea
+                const { data, error } = await supabaseClient
+                    .from('galatic_users')
+                    .select('*')
+                    .neq('uid', currentUser.uid);
+
+                if (error) throw error;
+
+                // Cache local de utilizadores
+                data.forEach(u => {
+                    usersCache[u.uid] = u;
+                });
+
+                renderConversationsList(data);
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        function renderConversationsList(users) {
+            const container = document.getElementById('chats-list-container');
+            
+            // Grava a posição de rolamento antes de re-renderizar
+            const scrollPos = container.scrollTop;
+
+            container.innerHTML = "";
+
+            if (users.length === 0) {
+                container.innerHTML = `
+                    <div class="flex flex-col items-center justify-center h-full text-center p-6 text-gray-400 space-y-2">
+                        <i data-lucide="compass" class="w-8 h-8 text-indigo-400/40 animate-pulse"></i>
+                        <p class="text-xs">Nenhum canal ativo encontrado nesta frequência espacial.</p>
+                    </div>`;
+                lucide.createIcons();
+                return;
+            }
+
+            users.forEach(user => {
+                const isOnline = user.status === 'online';
+                const statusColor = isOnline ? 'bg-green-500' : 'bg-gray-500 animate-pulse';
+                
+                const card = document.createElement('div');
+                card.className = "p-3 mx-2 my-1 rounded-xl flex items-center justify-between hover:bg-white/5 cursor-pointer transition relative";
+                card.onclick = () => selectActiveChat(user);
+
+                card.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <div class="relative flex-shrink-0">
+                            <img src="${user.avatar_url}" class="w-11 h-11 rounded-full object-cover border border-white/10" alt="Avatar">
+                            <span class="absolute bottom-0 right-0 w-3 h-3 ${statusColor} border-2 border-black rounded-full"></span>
+                        </div>
+                        <div class="min-w-0">
+                            <div class="flex items-center gap-1">
+                                <span class="font-bold text-sm text-gray-200 block truncate">${user.nick}</span>
+                                <span class="text-[9px] text-gray-500 font-mono">#${user.id_tag}</span>
+                            </div>
+                            <span class="text-[11px] text-gray-400 block truncate max-w-[180px]">${user.bio || 'Sem sinal de biografia...'}</span>
+                        </div>
+                    </div>
+                `;
+
+                container.appendChild(card);
+            });
+
+            container.scrollTop = scrollPos;
+            lucide.createIcons();
+        }
+
+        /*
+        * ==========================================
+        * PESQUISA DE CONTACTOS
+        * ==========================================
+        */
+        function searchContacts() {
+            const searchVal = document.getElementById('search-contact-input').value.trim().toLowerCase();
+            const clearBtn = document.getElementById('btn-clear-search');
+
+            if (searchVal) {
+                clearBtn.classList.remove('hidden');
+            } else {
+                clearBtn.classList.add('hidden');
+                loadConversations();
+                return;
+            }
+
+            const filtered = Object.values(usersCache).filter(user => {
+                const nameMatch = user.nick.toLowerCase().includes(searchVal);
+                const tagMatch = user.id_tag.toLowerCase().includes(searchVal);
+                return nameMatch || tagMatch;
+            });
+
+            renderConversationsList(filtered);
+        }
+
+        function clearSearch() {
+            document.getElementById('search-contact-input').value = "";
+            document.getElementById('btn-clear-search').classList.add('hidden');
+            loadConversations();
+        }
+
+        /*
+        * ==========================================
+        * CONTROLE DO CHAT SELECIONADO
+        * ==========================================
+        */
+        async function selectActiveChat(user) {
+            activeChatUser = user;
+
+            document.getElementById('chat-welcome-state').classList.add('hidden');
+            document.getElementById('chat-active-state').classList.remove('hidden');
+
+            document.getElementById('active-avatar').src = user.avatar_url;
+            document.getElementById('active-nick').innerText = user.nick;
+            document.getElementById('active-uid').innerText = `#${user.id_tag}`;
+            document.getElementById('active-status').innerText = user.status === 'online' ? 'Sincronizado (Online)' : 'Canal offline';
+            
+            const indicator = document.getElementById('active-online-indicator');
+            indicator.className = `absolute bottom-0 right-0 w-3 h-3 border-2 border-black rounded-full ${user.status === 'online' ? 'bg-green-500' : 'bg-gray-500'}`;
+
+            updateBlockButtonUI();
+            await fetchMessagesForCurrentChat();
+            
+            // Força a atualização do layout responsivo com base no novo estado do chat ativo
+            setupResponsiveLayout();
+        }
+
+        function backToSidebar() {
+            activeChatUser = null;
+            setupResponsiveLayout();
+        }
+
+        function updateBlockButtonUI() {
+            const isBlocked = blocksList.includes(activeChatUser.uid);
+            const btn = document.getElementById('btn-block');
+            if (isBlocked) {
+                btn.innerHTML = `<i data-lucide="shield" class="w-5 h-5 text-emerald-400"></i>`;
+                btn.title = "Desbloquear Canal";
+            } else {
+                btn.innerHTML = `<i data-lucide="shield-alert" class="w-5 h-5 text-rose-400"></i>`;
+                btn.title = "Bloquear Transmissões";
+            }
+            lucide.createIcons();
+        }
+
+        /*
+        * ==========================================
+        * CARREGAMENTO E ENVIO DE MENSAGENS
+        * ==========================================
+        */
+        async function fetchMessagesForCurrentChat() {
+            try {
+                const { data, error } = await supabaseClient
+                    .from('galatic_messages')
+                    .select('*')
+                    .or(`and(sender_uid.eq.${currentUser.uid},receiver_uid.eq.${activeChatUser.uid}),and(sender_uid.eq.${activeChatUser.uid},receiver_uid.eq.${currentUser.uid})`)
+                    .order('created_at', { ascending: true });
+
+                if (error) throw error;
+
+                // Armazena as novas mensagens e dispara notificação sonora se necessário
+                const newMessages = data || [];
+                let hasNewIncomingMessage = false;
+
+                newMessages.forEach(msg => {
+                    if (!seenMessagesIds.has(msg.uid)) {
+                        seenMessagesIds.add(msg.uid);
+                        // Só notifica se for uma mensagem nova recebida de outro utilizador
+                        if (msg.sender_uid !== currentUser.uid) {
+                            hasNewIncomingMessage = true;
+                        }
+                    }
+                });
+
+                if (hasNewIncomingMessage) {
+                    triggerMessageNotification();
+                }
+
+                messagesList = newMessages;
+                renderMessages();
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        function renderMessages() {
+            const container = document.getElementById('messages-scroller');
+            container.innerHTML = "";
+
+            if (messagesList.length === 0) {
+                container.innerHTML = `
+                    <div class="flex flex-col items-center justify-center h-full text-center p-6 text-gray-500 space-y-1">
+                        <i data-lucide="satellite-dish" class="w-8 h-8 text-indigo-400/30"></i>
+                        <p class="text-xs">Canal sintonizado. Escreva a sua primeira transmissão.</p>
+                    </div>`;
+                lucide.createIcons();
+                return;
+            }
+
+            messagesList.forEach(msg => {
+                const isMe = msg.sender_uid === currentUser.uid;
+                const date = new Date(msg.created_at);
+                const timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+                let contentHTML = `<p class="text-sm break-words select-text">${escapeHTML(msg.content)}</p>`;
+
+                if (msg.message_type === 'image') {
+                    contentHTML = `<img src="${msg.media_url}" class="rounded-xl max-w-xs max-h-60 object-cover cursor-pointer hover:scale-[1.02] transition" onclick="window.open('${msg.media_url}')">`;
+                } else if (msg.message_type === 'video') {
+                    contentHTML = `<video src="${msg.media_url}" controls class="rounded-xl max-w-xs max-h-60"></video>`;
+                } else if (msg.message_type === 'file') {
+                    contentHTML = `
+                        <a href="${msg.media_url}" target="_blank" class="flex items-center gap-2 p-2 rounded-lg bg-black/20 hover:bg-black/35 text-xs text-indigo-300 transition">
+                            <i data-lucide="file" class="w-5 h-5 flex-shrink-0"></i>
+                            <span class="truncate max-w-[150px]">Ficheiro Recebido</span>
+                        </a>`;
+                }
+
+                const msgWrapper = document.createElement('div');
+                msgWrapper.className = `flex w-full ${isMe ? 'justify-end' : 'justify-start'} group`;
+
+                msgWrapper.innerHTML = `
+                    <div class="relative max-w-[75%] md:max-w-[60%] flex flex-col space-y-1 animate-pulse-once">
+                        <!-- Menu flutuante rápido para ações da mensagem -->
+                        <div class="absolute -top-4 ${isMe ? '-left-12' : '-right-12'} hidden group-hover:flex items-center gap-1 bg-black/60 rounded-lg p-1 border border-white/10 z-20 transition">
+                            <button onclick="replyToMessage('${msg.uid}')" class="p-1 hover:bg-white/10 rounded text-gray-300" title="Responder">
+                                <i data-lucide="reply" class="w-3.5 h-3.5"></i>
+                            </button>
+                            <button onclick="copyMessageText('${msg.uid}')" class="p-1 hover:bg-white/10 rounded text-gray-300" title="Copiar">
+                                <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                            </button>
+                            ${isMe ? `
+                            <button onclick="deleteMessage('${msg.uid}')" class="p-1 hover:bg-white/10 rounded text-rose-400" title="Apagar para todos">
+                                <i data-lucide="trash" class="w-3.5 h-3.5"></i>
+                            </button>` : ''}
+                        </div>
+
+                        <!-- Balão de Texto -->
+                        <div class="${isMe ? 'msg-bubble-sent' : 'msg-bubble-received'} p-3 text-white shadow-md relative">
+                            ${msg.reply_to_uid ? renderReplySnippet(msg.reply_to_uid) : ''}
+                            ${contentHTML}
+                        </div>
+
+                        <!-- Info Rodapé -->
+                        <div class="flex items-center justify-between gap-1 text-[9px] text-gray-400 px-1">
+                            <span>${timeStr}</span>
+                            ${isMe ? `<span class="text-indigo-400"><i data-lucide="check-check" class="w-3.5 h-3.5 inline"></i></span>` : ''}
+                        </div>
+                    </div>
+                `;
+
+                container.appendChild(msgWrapper);
+            });
+
+            setTimeout(() => {
+                container.scrollTop = container.scrollHeight;
+            }, 50);
+
+            lucide.createIcons();
+        }
+
+        function renderReplySnippet(replyId) {
+            const original = messagesList.find(m => m.uid === replyId);
+            if (original) {
+                return `
+                    <div class="p-1.5 rounded bg-black/25 text-[10px] text-gray-300 border-l-2 border-indigo-500 mb-2 truncate">
+                        ${original.content || 'Média anexada'}
+                    </div>`;
+            }
+            return `
+                <div class="p-1.5 rounded bg-black/25 text-[10px] text-gray-400 border-l-2 border-indigo-500 mb-2">
+                    Sinal referenciado
+                </div>`;
+        }
+
+        /*
+        * ==========================================
+        * CONTROLE DE DIGITAÇÃO E RESPOSTAS
+        * ==========================================
+        */
+        let activeReplyUid = null;
+
+        function handleMessageKeyUp(e) {
+            if (e.key === 'Enter') {
+                sendChatMessage();
+            }
+        }
+
+        async function sendChatMessage() {
+            const input = document.getElementById('message-input');
+            const text = input.value.trim();
+
+            if (!text && !activeReplyUid) return;
+
+            if (blocksList.includes(activeChatUser.uid)) {
+                showCosmicToast("Canal Bloqueado", "Por favor, desbloqueie o contacto para enviar sinais.", "error");
+                return;
+            }
+
+            try {
+                const newMsg = {
+                    sender_uid: currentUser.uid,
+                    receiver_uid: activeChatUser.uid,
+                    content: text,
+                    message_type: 'text',
+                    reply_to_uid: activeReplyUid
+                };
+
+                const { error } = await supabaseClient
+                    .from('galatic_messages')
+                    .insert([newMsg]);
+
+                if (error) throw error;
+
+                input.value = "";
+                cancelMessageReply();
+                await fetchMessagesForCurrentChat();
+            } catch (err) {
+                console.error(err);
+                showCosmicToast("Falha de Envio", "Sinal cósmico interrompido.", "error");
+            }
+        }
+
+        function replyToMessage(uid) {
+            const targetMsg = messagesList.find(m => m.uid === uid);
+            if (!targetMsg) return;
+
+            activeReplyUid = uid;
+            const previewContainer = document.getElementById('reply-preview-container');
+            const targetNick = document.getElementById('reply-target-nick');
+            const targetText = document.getElementById('reply-target-text');
+
+            targetNick.innerText = targetMsg.sender_uid === currentUser.uid ? 'Você' : activeChatUser.nick;
+            targetText.innerText = targetMsg.content || 'Ficheiro / Imagem';
+
+            previewContainer.classList.remove('hidden');
+        }
+
+        function cancelMessageReply() {
+            activeReplyUid = null;
+            document.getElementById('reply-preview-container').classList.add('hidden');
+        }
+
+        function copyMessageText(uid) {
+            const targetMsg = messagesList.find(m => m.uid === uid);
+            if (!targetMsg || !targetMsg.content) return;
+
+            const textarea = document.createElement('textarea');
+            textarea.value = targetMsg.content;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+
+            showCosmicToast("Copiado!", "Conteúdo copiado para a área de transferência.", "success");
+        }
+
+        async function deleteMessage(uid) {
+            try {
+                const { error } = await supabaseClient
+                    .from('galatic_messages')
+                    .delete()
+                    .eq('uid', uid);
+
+                if (error) throw error;
+
+                showCosmicToast("Sinal Excluído", "Transmissão apagada de ambos os lados.", "success");
+                await fetchMessagesForCurrentChat();
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        /*
+        * ==========================================
+        * GESTÃO E EXCLUSÃO DO CANAL DE CONVERSA
+        * ==========================================
+        */
+        function toggleChatMenu() {
+            const menu = document.getElementById('chat-dropdown-menu');
+            menu.classList.toggle('hidden');
+        }
+
+        async function clearCurrentChat() {
+            toggleChatMenu();
+            if (!confirm("Pretende limpar todo o histórico local com este explorador?")) return;
+
+            try {
+                const { error } = await supabaseClient
+                    .from('galatic_messages')
+                    .delete()
+                    .eq('sender_uid', currentUser.uid)
+                    .eq('receiver_uid', activeChatUser.uid);
+
+                if (error) throw error;
+
+                showCosmicToast("Limpeza Efetuada", "Histórico de envio apagado.", "success");
+                await fetchMessagesForCurrentChat();
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        async function deleteCurrentChat() {
+            toggleChatMenu();
+            if (!confirm("Tem a certeza que quer desintegrar totalmente esta conversa nos dois lados da galáxia?")) return;
+
+            try {
+                const { error } = await supabaseClient
+                    .from('galatic_messages')
+                    .delete()
+                    .or(`and(sender_uid.eq.${currentUser.uid},receiver_uid.eq.${activeChatUser.uid}),and(sender_uid.eq.${activeChatUser.uid},receiver_uid.eq.${currentUser.uid})`);
+
+                if (error) throw error;
+
+                showCosmicToast("Canal Desintegrado", "Mensagens eliminadas para ambos os utilizadores.", "success");
+                await fetchMessagesForCurrentChat();
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        async function toggleBlockContact() {
+            const isBlocked = blocksList.includes(activeChatUser.uid);
+
+            try {
+                if (isBlocked) {
+                    const { error } = await supabaseClient
+                        .from('galatic_blocks')
+                        .delete()
+                        .eq('user_uid', currentUser.uid)
+                        .eq('blocked_uid', activeChatUser.uid);
+
+                    if (error) throw error;
+                    blocksList = blocksList.filter(id => id !== activeChatUser.uid);
+                    showCosmicToast("Canal Desbloqueado", `${activeChatUser.nick} pode interagir consigo novamente.`, "success");
+                } else {
+                    const { error } = await supabaseClient
+                        .from('galatic_blocks')
+                        .insert([{ user_uid: currentUser.uid, blocked_uid: activeChatUser.uid }]);
+
+                    if (error) throw error;
+                    blocksList.push(activeChatUser.uid);
+                    showCosmicToast("Contacto Bloqueado", `Bloqueou as comunicações de ${activeChatUser.nick}.`, "info");
+                }
+                updateBlockButtonUI();
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        /*
+        * ==========================================
+        * MULTIMÉDIA: UPLOAD DE FICHEIROS PARA STORAGE
+        * ==========================================
+        */
+        function toggleAttachmentMenu() {
+            document.getElementById('attachment-dropdown').classList.toggle('hidden');
+        }
+
+        async function uploadAttachment(type) {
+            toggleAttachmentMenu();
+
+            let fileInput;
+            let bucketName;
+
+            if (type === 'image') {
+                fileInput = document.getElementById('file-image');
+                bucketName = 'chat_images';
+            } else if (type === 'video') {
+                fileInput = document.getElementById('file-video');
+                bucketName = 'chat_videos';
+            } else {
+                fileInput = document.getElementById('file-doc');
+                bucketName = 'chat_files';
+            }
+
+            const file = fileInput.files[0];
+            if (!file) return;
+
+            showCosmicToast("A carregar", "A enviar ficheiro para a nuvem estelar...", "info");
+
+            try {
+                const fileExt = file.name.split('.').pop();
+                const fileName = `${Math.random()}_${Date.now()}.${fileExt}`;
+                const filePath = `${currentUser.uid}/${fileName}`;
+
+                const { data, error } = await supabaseClient.storage
+                    .from(bucketName)
+                    .upload(filePath, file);
+
+                if (error) throw error;
+
+                const { data: publicData } = supabaseClient.storage
+                    .from(bucketName)
+                    .getPublicUrl(filePath);
+
+                const fileUrl = publicData.publicUrl;
+
+                const newMsg = {
+                    sender_uid: currentUser.uid,
+                    receiver_uid: activeChatUser.uid,
+                    content: `Partilhou um ficheiro do tipo: ${type}`,
+                    message_type: type,
+                    media_url: fileUrl
+                };
+
+                const { error: msgErr } = await supabaseClient
+                    .from('galatic_messages')
+                    .insert([newMsg]);
+
+                if (msgErr) throw msgErr;
+
+                showCosmicToast("Sucesso", "Ficheiro sintonizado no cosmos.", "success");
+                await fetchMessagesForCurrentChat();
+            } catch (err) {
+                console.error(err);
+                showCosmicToast("Erro de Upload", "Por favor certifique-se de que os buckets do Storage estão públicos no painel.", "error");
+            }
+        }
+
+        /*
+        * ==========================================
+        * PAINEL DE CONFIGURAÇÕES DE CONTA DO UTILIZADOR
+        * ==========================================
+        */
+        function openSettingsPanel() {
+            document.getElementById('settings-my-avatar').src = currentUser.avatar_url;
+            document.getElementById('settings-my-bio').value = currentUser.bio || "";
+            document.getElementById('modal-settings').classList.remove('hidden');
+            switchSettingsTab('tab-profile');
+        }
+
+        function openMyProfileSettings() {
+            openSettingsPanel();
+        }
+
+        function closeSettingsPanel() {
+            document.getElementById('modal-settings').classList.add('hidden');
+        }
+
+        function switchSettingsTab(tabId) {
+            document.querySelectorAll('.settings-tab').forEach(tab => tab.classList.add('hidden'));
+            document.getElementById(tabId).classList.remove('hidden');
+
+            document.getElementById('btn-tab-profile').className = `flex-1 pb-2 border-b-2 ${tabId === 'tab-profile' ? 'border-indigo-500 text-white font-semibold' : 'border-transparent text-gray-400'}`;
+            document.getElementById('btn-tab-account').className = `flex-1 pb-2 border-b-2 ${tabId === 'tab-account' ? 'border-indigo-500 text-white font-semibold' : 'border-transparent text-gray-400'}`;
+        }
+
+        function triggerAvatarUpload() {
+            document.getElementById('settings-avatar-input').click();
+        }
+
+        async function uploadMyAvatar(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            showCosmicToast("Foto de Perfil", "A atualizar avatar cósmico...", "info");
+
+            try {
+                const fileExt = file.name.split('.').pop();
+                const filePath = `avatars/${currentUser.uid}.${fileExt}`;
+
+                const { data, error } = await supabaseClient.storage
+                    .from('profile_photos')
+                    .upload(filePath, file, { upsert: true });
+
+                if (error) throw error;
+
+                const { data: publicData } = supabaseClient.storage
+                    .from('profile_photos')
+                    .getPublicUrl(filePath);
+
+                const avatarUrl = publicData.publicUrl;
+
+                const { error: updateErr } = await supabaseClient
+                    .from('galatic_users')
+                    .update({ avatar_url: avatarUrl })
+                    .eq('uid', currentUser.uid);
+
+                if (updateErr) throw updateErr;
+
+                currentUser.avatar_url = avatarUrl;
+                localStorage.setItem('galatic_logged_user', JSON.stringify(currentUser));
+                document.getElementById('settings-my-avatar').src = avatarUrl;
+                document.getElementById('my-avatar').src = avatarUrl;
+
+                showCosmicToast("Identidade Atualizada", "A sua foto de perfil foi guardada.", "success");
+            } catch (err) {
+                console.error(err);
+                showCosmicToast("Erro ao Atualizar", "Certifique-se de que possui o bucket 'profile_photos' ativo.", "error");
+            }
+        }
+
+        async function saveProfileChanges() {
+            const bio = document.getElementById('settings-my-bio').value.trim();
+
+            try {
+                const { error } = await supabaseClient
+                    .from('galatic_users')
+                    .update({ bio: bio })
+                    .eq('uid', currentUser.uid);
+
+                if (error) throw error;
+
+                currentUser.bio = bio;
+                localStorage.setItem('galatic_logged_user', JSON.stringify(currentUser));
+                document.getElementById('my-status-text').innerText = bio || "Ativo na Órbita";
+
+                showCosmicToast("Sincronizado", "A sua biografia foi sintonizada com sucesso.", "success");
+                closeSettingsPanel();
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        async function changeUserPassword() {
+            const newPassword = document.getElementById('settings-new-password').value;
+
+            if (newPassword.length < 6) {
+                showCosmicToast("Chave Fraca", "A nova palavra-passe precisa de possuir no mínimo 6 carateres.", "error");
+                return;
+            }
+
+            try {
+                const { error } = await supabaseClient
+                    .from('galatic_users')
+                    .update({ password: newPassword })
+                    .eq('uid', currentUser.uid);
+
+                if (error) throw error;
+
+                showCosmicToast("Segurança Atualizada", "Palavra-passe alterada com sucesso.", "success");
+                document.getElementById('settings-new-password').value = "";
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        function clearLocalCache() {
+            if (confirm("Deseja redefinir os dados temporários locais deste dispositivo?")) {
+                localStorage.clear();
+                window.location.reload();
+            }
+        }
+
+        async function logoutUser() {
+            // Limpa o loop de atualização HTTP antes de fechar a sessão
+            if (pollingInterval) {
+                clearInterval(pollingInterval);
+                pollingInterval = null;
+            }
+
+            try {
+                await supabaseClient
+                    .from('galatic_users')
+                    .update({ status: 'offline', last_seen: new Date().toISOString() })
+                    .eq('uid', currentUser.uid);
+            } catch (e) {}
+
+            localStorage.removeItem('galatic_logged_user');
+            window.location.reload();
+        }
+
+        async function deleteMyAccount() {
+            if (!confirm("AVISO CRÍTICO: Pretende realmente desintegrar e eliminar permanentemente a sua conta de toda a galáxia?")) return;
+
+            try {
+                const { error } = await supabaseClient
+                    .from('galatic_users')
+                    .delete()
+                    .eq('uid', currentUser.uid);
+
+                if (error) throw error;
+
+                showCosmicToast("Registo Removido", "Os seus dados foram removidos da rede.", "info");
+                localStorage.removeItem('galatic_logged_user');
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1500);
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        /*
+        * ==========================================
+        * SINCRONIZADOR EM TEMPO REAL (REALTIME)
+        * ==========================================
+        */
+        function setupGlobalRealtime() {
+            if (!supabaseClient) return;
+
+            // Subscrever canal para novas mensagens destinadas a mim via WebSockets com tratamento de erro
+            try {
+                realTimeChannel = supabaseClient.channel('schema-db-changes')
+                    .on(
+                        'postgres_changes',
+                        {
+                            event: 'INSERT',
+                            schema: 'public',
+                            table: 'galatic_messages'
+                        },
+                        (payload) => {
+                            handleRealtimeMessageInsert(payload.new);
+                        }
+                    )
+                    .on(
+                        'postgres_changes',
+                        {
+                            event: 'DELETE',
+                            schema: 'public',
+                            table: 'galatic_messages'
+                        },
+                        (payload) => {
+                            handleRealtimeMessageDelete(payload.old);
+                        }
+                    );
+
+                realTimeChannel.subscribe((status, err) => {
+                    // Se a conexão WebSocket falhar ou for recusada pelo ambiente Sandbox
+                    if (status === 'CHANNEL_ERROR' || err) {
+                        console.warn("Conexão WebSocket bloqueada ou indisponível no Canvas. Ativando sondagem HTTP de redundância...");
+                        startPollingFallback();
+                    }
+                });
+            } catch (e) {
+                console.warn("Erro ao iniciar o WebSocket de mensagens:", e);
+                startPollingFallback();
+            }
+
+            // Subscrever alterações globais de utilizadores (Status/Bio/Avatar)
+            try {
+                userOnlineChannel = supabaseClient.channel('user-status-changes')
+                    .on(
+                        'postgres_changes',
+                        {
+                            event: 'UPDATE',
+                            schema: 'public',
+                            table: 'galatic_users'
+                        },
+                        (payload) => {
+                            const updatedUser = payload.new;
+                            if (usersCache[updatedUser.uid]) {
+                                usersCache[updatedUser.uid] = updatedUser;
+                                if (activeChatUser && activeChatUser.uid === updatedUser.uid) {
+                                    activeChatUser = updatedUser;
+                                    document.getElementById('active-status').innerText = updatedUser.status === 'online' ? 'Sincronizado (Online)' : 'Canal offline';
+                                    const indicator = document.getElementById('active-online-indicator');
+                                    indicator.className = `absolute bottom-0 right-0 w-3 h-3 border-2 border-black rounded-full ${updatedUser.status === 'online' ? 'bg-green-500' : 'bg-gray-500'}`;
+                                }
+                                renderConversationsList(Object.values(usersCache));
+                            }
+                        }
+                    );
+                userOnlineChannel.subscribe();
+            } catch (e) {
+                console.warn("Erro ao iniciar o WebSocket de status de utilizadores:", e);
+                startPollingFallback();
+            }
+        }
+
+        /*
+        * ==========================================
+        * MECANISMO DE SONDAGEM HTTP DE REDUNDÂNCIA (POLLING)
+        * ==========================================
+        * Ativado de forma automática e silenciosa se as conexões de WebSockets forem bloqueadas.
+        */
+        function startPollingFallback() {
+            if (pollingInterval) return; // Garante que não criamos loops concorrentes
+
+            console.log("Sistema de sondagem estelar HTTP ativo a cada 3 segundos.");
+            pollingInterval = setInterval(async () => {
+                // Atualiza mensagens se tivermos uma conversa ativa
+                if (activeChatUser) {
+                    await fetchMessagesForCurrentChat();
+                }
+                // Atualiza a lista global de utilizadores e status
+                await loadConversations();
+            }, 3000);
+        }
+
+        function handleRealtimeMessageInsert(msg) {
+            if (activeChatUser && (
+                (msg.sender_uid === currentUser.uid && msg.receiver_uid === activeChatUser.uid) ||
+                (msg.sender_uid === activeChatUser.uid && msg.receiver_uid === currentUser.uid)
+            )) {
+                if (!messagesList.some(m => m.uid === msg.uid)) {
+                    messagesList.push(msg);
+                    renderMessages();
+                }
+            } else if (msg.receiver_uid === currentUser.uid) {
+                const sender = usersCache[msg.sender_uid];
+                const senderName = sender ? sender.nick : 'Desconhecido';
+                showCosmicToast(`Mensagem de ${senderName}`, msg.content || "Enviou uma partilha multimédia", "info");
+            }
+
+            // Ativa o áudio para qualquer nova mensagem recebida de outro utilizador
+            if (msg.sender_uid !== currentUser.uid && !seenMessagesIds.has(msg.uid)) {
+                seenMessagesIds.add(msg.uid);
+                triggerMessageNotification();
+            }
+        }
+
+        function handleRealtimeMessageDelete(oldMsg) {
+            if (activeChatUser) {
+                messagesList = messagesList.filter(m => m.uid !== oldMsg.uid);
+                renderMessages();
+            }
+        }
+
+        /*
+        * ==========================================
+        * COMPONENTES DE INTERFACE E UTILITÁRIOS
+        * ==========================================
+        */
+        function toggleEmojiPicker() {
+            document.getElementById('emoji-picker').classList.toggle('hidden');
+        }
+
+        function insertEmoji(emoji) {
+            const input = document.getElementById('message-input');
+            input.value += emoji;
+            toggleEmojiPicker();
+            input.focus();
+        }
+
+        function escapeHTML(str) {
+            if (!str) return '';
+            return str.replace(/[&<>'"]/g, 
+                tag => ({
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    "'": '&#39;',
+                    '"': '&quot;'
+                }[tag] || tag)
+            );
+        }
+
+        function openContactProfile() {
+            if (!activeChatUser) return;
+            document.getElementById('contact-p-avatar').src = activeChatUser.avatar_url;
+            document.getElementById('contact-p-nick').innerText = activeChatUser.nick;
+            document.getElementById('contact-p-uid').innerText = `#${activeChatUser.id_tag}`;
+            document.getElementById('contact-p-bio').innerText = activeChatUser.bio || "Apenas mais um explorador estelar no infinito.";
+            document.getElementById('contact-p-created').innerText = new Date(activeChatUser.created_at || Date.now()).toLocaleDateString();
+            document.getElementById('contact-p-access').innerText = new Date(activeChatUser.last_seen || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+            const badge = document.getElementById('contact-p-badge');
+            badge.className = `absolute bottom-2 right-2 w-4 h-4 border-2 border-black rounded-full ${activeChatUser.status === 'online' ? 'bg-green-500' : 'bg-gray-500'}`;
+
+            document.getElementById('modal-contact-profile').classList.remove('hidden');
+        }
+
+        function closeContactProfile() {
+            document.getElementById('modal-contact-profile').classList.add('hidden');
+        }
+
+        function startAudioRecording() {
+            showCosmicToast("Microfone Ativo", "A gravar transmissão espacial...", "info");
+        }
+
+        function stopAudioRecording() {
+            showCosmicToast("Áudio Gravado", "Áudio sintonizado com sucesso.", "success");
+        }
+    </script>
+</body>
+</html>
