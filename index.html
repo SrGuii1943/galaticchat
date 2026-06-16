@@ -162,7 +162,7 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* Gestão de transição de ecrãs - Ajustado com !important para evitar conflito de classes utilitárias do Tailwind no ecrã principal */
+        /* Gestão de transição de ecrãs - Ajustado com !important */
         .app-screen {
             display: none !important;
             opacity: 0;
@@ -186,6 +186,18 @@
             border-radius: 20px 20px 20px 4px;
             border: 1px solid rgba(255, 255, 255, 0.05);
         }
+
+        /* Estilo da Borda Ativa de Status */
+        .status-ring-active {
+            border: 2px dashed #d946ef;
+            padding: 2px;
+            animation: rotateRing 20s linear infinite;
+        }
+
+        @keyframes rotateRing {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body class="relative min-h-screen flex flex-col justify-between overflow-hidden">
@@ -207,7 +219,7 @@
                     <i data-lucide="aperture" class="w-12 h-12 text-indigo-400"></i>
                 </div>
                 <h1 class="text-3xl font-extrabold cosmic-gradient-text tracking-wide uppercase">Galatic Chat</h1>
-                <p class="text-xs text-gray-400 mt-1 font-light">Seja bem-vindo à rede de comunicação interestelar</p>
+                <p class="text-xs text-gray-400 mt-1 font-light font-sans">Seja bem-vindo à rede de comunicação interestelar</p>
             </div>
 
             <div class="space-y-4">
@@ -244,7 +256,7 @@
                     <i data-lucide="sparkles" class="w-12 h-12 text-pink-400"></i>
                 </div>
                 <h1 class="text-2xl font-extrabold cosmic-gradient-text uppercase">Nova Frequência</h1>
-                <p class="text-xs text-gray-400 mt-1">Sintonize os seus dados para gerar o seu ID único</p>
+                <p class="text-xs text-gray-400 mt-1 font-sans">Sintonize os seus dados para gerar o seu ID único</p>
             </div>
 
             <div class="space-y-4">
@@ -297,9 +309,21 @@
                         </div>
                     </div>
                     <div class="flex items-center gap-2">
-                        <button onclick="openSettingsPanel()" class="p-2 rounded-lg hover:bg-white/5 text-gray-300 transition" title="Definições da Nave">
+                        <!-- Botão Novo Status Compacto - Ícone elegante sem texto grande -->
+                        <button onclick="openPublishStatusModal()" class="p-2.5 rounded-xl hover:bg-pink-500/10 text-pink-400 border border-pink-500/25 transition flex items-center justify-center" title="Publicar Status Cósmico">
+                            <i data-lucide="plus-circle" class="w-5 h-5"></i>
+                        </button>
+                        <button onclick="openSettingsPanel()" class="p-2.5 rounded-xl hover:bg-white/5 text-gray-300 transition" title="Definições da Nave">
                             <i data-lucide="settings" class="w-5 h-5"></i>
                         </button>
+                    </div>
+                </div>
+
+                <!-- CAROUSEL DE STATUS CÓSMICOS -->
+                <div class="p-3 border-b border-white/5 bg-black/5 flex-shrink-0 flex flex-col gap-2">
+                    <span class="text-[10px] font-semibold text-indigo-300 uppercase tracking-widest pl-1">Status Cósmicos</span>
+                    <div class="flex items-center gap-3 overflow-x-auto py-1" id="status-carousel-container">
+                        <!-- Gerado dinamicamente -->
                     </div>
                 </div>
 
@@ -337,7 +361,7 @@
                         </div>
                     </div>
                     <h2 class="text-2xl font-bold text-gray-200">Sincronizador Cósmico</h2>
-                    <p class="text-xs text-gray-400 max-w-sm">Estabeleça uma ligação com outros viajantes espaciais para abrir um canal de mensagens criptografado.</p>
+                    <p class="text-xs text-gray-400 max-w-sm font-sans">Estabeleça uma ligação com outros viajantes espaciais para abrir um canal de mensagens criptografado.</p>
                 </div>
 
                 <!-- Canal de Mensagens Ativo -->
@@ -449,13 +473,10 @@
                                 </div>
                             </div>
 
-                            <!-- Botão Enviar ou Gravar Áudio -->
+                            <!-- Botão Enviar -->
                             <div id="action-buttons">
                                 <button onclick="sendChatMessage()" id="btn-send-message" class="p-3 rounded-xl cosmic-button text-white">
                                     <i data-lucide="send" class="w-5 h-5"></i>
-                                </button>
-                                <button id="btn-record-audio" onmousedown="startAudioRecording()" onmouseup="stopAudioRecording()" ontouchstart="startAudioRecording()" ontouchend="stopAudioRecording()" class="hidden p-3 rounded-xl bg-purple-500/20 hover:bg-purple-500/40 border border-purple-500/30 text-purple-400 transition" title="Segure para Gravar Áudio">
-                                    <i data-lucide="mic" class="w-5 h-5"></i>
                                 </button>
                             </div>
                         </div>
@@ -470,6 +491,111 @@
     </div>
 
     <!-- ================= MODALS E ABAS FLUTUANTES ================= -->
+
+    <!-- Modal: Caixa de Confirmação Cósmica (Substitui Alertas e Confirmações do Browser) -->
+    <div id="modal-confirm" class="fixed inset-0 bg-black/85 z-[60] flex items-center justify-center p-4 hidden">
+        <div class="glass-card max-w-sm w-full rounded-2xl p-6 text-center space-y-4 fade-in">
+            <div class="inline-flex p-3 rounded-full bg-rose-500/10 border border-rose-500/25 text-rose-400">
+                <i data-lucide="alert-triangle" class="w-8 h-8"></i>
+            </div>
+            <h4 id="confirm-title" class="text-lg font-bold text-white">Tem a certeza?</h4>
+            <p id="confirm-description" class="text-xs text-gray-400">Esta acção não pode ser revertida.</p>
+            <div class="flex gap-3">
+                <button id="btn-confirm-cancel" class="flex-1 py-2 bg-white/5 border border-white/10 hover:bg-white/10 rounded-xl text-xs font-semibold text-gray-300 transition">Cancelar</button>
+                <button id="btn-confirm-ok" class="flex-1 py-2 bg-rose-500 hover:bg-rose-600 rounded-xl text-xs font-semibold text-white transition">Confirmar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Publicar Novo Status Cósmico -->
+    <div id="modal-publish-status" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 hidden">
+        <div class="glass-card max-w-md w-full rounded-2xl p-6 relative flex flex-col space-y-4 fade-in">
+            <button onclick="closePublishStatusModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white">
+                <i data-lucide="x" class="w-6 h-6"></i>
+            </button>
+            <h3 class="text-xl font-bold cosmic-gradient-text uppercase tracking-wider flex items-center gap-2">
+                <i data-lucide="sparkles" class="w-5 h-5 text-indigo-400"></i> Novo Status Cósmico
+            </h3>
+            <p class="text-xs text-gray-400 font-sans">Publique algo novo na sua frequência estelar. Ficheiros expiram em 24h.</p>
+
+            <div class="space-y-4">
+                <!-- Seletor de Tipo de Envio estilo WhatsApp -->
+                <div class="grid grid-cols-2 gap-3">
+                    <button onclick="triggerStatusUpload('gallery')" class="py-4 bg-white/5 border border-white/10 hover:bg-white/10 rounded-xl text-xs font-semibold text-indigo-300 transition flex flex-col items-center justify-center gap-2">
+                        <i data-lucide="image" class="w-6 h-6 text-pink-400"></i>
+                        <span>Escolher da Galeria</span>
+                    </button>
+                    <button onclick="triggerStatusUpload('camera')" class="py-4 bg-white/5 border border-white/10 hover:bg-white/10 rounded-xl text-xs font-semibold text-indigo-300 transition flex flex-col items-center justify-center gap-2">
+                        <i data-lucide="camera" class="w-6 h-6 text-emerald-400"></i>
+                        <span>Usar Câmara</span>
+                    </button>
+                </div>
+
+                <!-- Inputs invisíveis de envio de mídia de status -->
+                <input type="file" id="status-gallery-input" accept="image/*,video/*,audio/*" class="hidden" onchange="handleStatusMediaSelected('gallery')">
+                <input type="file" id="status-camera-input" accept="image/*,video/*" capture="environment" class="hidden" onchange="handleStatusMediaSelected('camera')">
+
+                <!-- Preview da Mídia Selecionada -->
+                <div id="status-media-preview-container" class="hidden p-2 rounded-xl bg-black/35 border border-white/10 flex flex-col items-center justify-center gap-2">
+                    <span class="text-[10px] text-pink-400 font-semibold uppercase tracking-wider">Preview de Transmissão</span>
+                    <div id="status-media-preview-box" class="w-full flex justify-center max-h-40 overflow-hidden rounded-lg"></div>
+                    <button onclick="removeSelectedStatusMedia()" class="text-xs text-rose-400 hover:underline">Remover Ficheiro</button>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-gray-300 uppercase mb-1">Legenda / Pensamento</label>
+                    <textarea id="status-caption-input" rows="3" class="w-full p-3 text-xs rounded-xl glass-input" placeholder="Escreva uma legenda estelar..."></textarea>
+                </div>
+
+                <button onclick="publishStatus()" id="btn-publish-status-submit" class="w-full py-3.5 rounded-xl text-xs font-semibold cosmic-button text-white flex items-center justify-center gap-2">
+                    <i data-lucide="rocket" class="w-4 h-4"></i> Publicar Status
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Visualizador de Status Cósmico (Stories Viewer) -->
+    <div id="modal-status-viewer" class="fixed inset-0 bg-black/95 z-50 flex flex-col justify-between p-4 hidden fade-in">
+        <!-- Linha de progresso no topo -->
+        <div class="w-full max-w-lg mx-auto flex gap-1 pt-4 px-2" id="status-progress-bars">
+            <!-- Gerado dinamicamente via JS -->
+        </div>
+
+        <!-- Cabeçalho do Status -->
+        <div class="w-full max-w-lg mx-auto flex items-center justify-between px-2 pt-2 text-white z-10">
+            <div class="flex items-center gap-3">
+                <img id="status-v-avatar" src="" class="w-10 h-10 rounded-full object-cover border border-white/20">
+                <div>
+                    <span id="status-v-nick" class="font-bold text-sm">--</span>
+                    <span id="status-v-time" class="text-[10px] text-gray-400 block">Há pouco</span>
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                <!-- Botão de Apagar Status Ativo (Visível apenas para o proprietário) -->
+                <button id="btn-delete-active-status" class="p-2 rounded-full hover:bg-white/10 text-rose-400 transition hidden" title="Eliminar Status">
+                    <i data-lucide="trash-2" class="w-5 h-5"></i>
+                </button>
+                <button onclick="closeStatusViewer()" class="p-2 rounded-full hover:bg-white/10 text-gray-300 transition">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Conteúdo do Status -->
+        <div class="flex-1 w-full max-w-lg mx-auto flex items-center justify-center relative px-2 py-4">
+            <div class="absolute inset-y-0 left-0 w-1/4 cursor-pointer" onclick="prevStatusSlide()"></div>
+            <div class="absolute inset-y-0 right-0 w-1/4 cursor-pointer" onclick="nextStatusSlide()"></div>
+
+            <div id="status-viewer-content" class="w-full h-full flex flex-col items-center justify-center text-center">
+                <!-- Injetado dinamicamente -->
+            </div>
+        </div>
+
+        <!-- Legenda/Rodapé -->
+        <div class="w-full max-w-lg mx-auto text-center px-4 pb-8 z-10">
+            <p id="status-v-caption" class="text-sm text-gray-100 font-medium whitespace-pre-wrap leading-relaxed max-w-md mx-auto">--</p>
+        </div>
+    </div>
 
     <!-- Modal: Detalhes do Perfil do Contacto -->
     <div id="modal-contact-profile" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 hidden">
@@ -599,6 +725,15 @@
         let unreadCountMap = {}; // Guarda número de mensagens não lidas por utilizador (uid -> quantidade)
         let pollingInterval = null; // Intervalo para sondagem de redundância HTTP
         let isInitialLoad = true; // Controla se o aplicativo está carregando dados pela primeira vez
+        let lastMessagesHash = ""; // Identifica se novas mensagens foram entregues para evitar repinturas desnecessárias e pulos no scroll
+        let lastSeenTimeout = null; // Temporizador para Heartbeat de status ativo
+
+        // Estado Global de Status
+        let statusesList = []; // Lista completa de status válidos nas últimas 24h
+        let currentStatusUserUid = null; // Utilizador dono dos status sendo exibidos no visualizador
+        let statusIndex = 0; // Índice do slide atual sendo exibido no modal do viewer
+        let statusTimer = null; // Intervalo para controle das barras de progresso do viewer
+        let selectedStatusFile = null; // Guarda o ficheiro de status que o utilizador escolheu para enviar
 
         // Inicialização do Áudio de Notificação
         const notificationSound = new Audio('notifica1943.mp3');
@@ -610,6 +745,7 @@
             initMeteorCanvas(); // Inicia os meteoros 3D imersivos dinamicamente
             initializeSupabaseConnection();
             setupResponsiveLayout();
+            setupPresenceListeners(); // Monitoriza se a app está aberta para marcar como Online/Offline
         };
 
         // Trata redimensionamento de ecrã para ajustar a visualização de dispositivos
@@ -651,8 +787,73 @@
 
         /*
         * ==========================================
+        * PRESENÇA REAL ESTILO WHATSAPP (Online/Offline dinâmico)
+        * ==========================================
+        */
+        function setupPresenceListeners() {
+            // Monitoriza a visibilidade da página (Foco da aba/Minimização/PWA em background)
+            document.addEventListener("visibilitychange", () => {
+                if (document.visibilityState === "visible") {
+                    updateMyPresence("online");
+                    startHeartbeat(); // Retoma o Heartbeat ativo
+                } else {
+                    updateMyPresence("offline");
+                    stopHeartbeat(); // Para o Heartbeat para poupar recursos e atualizar status imediatamente
+                }
+            });
+
+            // Monitoriza eventos de fecho no telemóvel e PWA
+            window.addEventListener("pagehide", () => {
+                updateMyPresence("offline");
+            });
+
+            // Monitoriza o fechamento da aba ou janela
+            window.addEventListener("beforeunload", () => {
+                updateMyPresence("offline");
+            });
+            window.addEventListener("unload", () => {
+                updateMyPresence("offline");
+            });
+        }
+
+        // Envia atualização de presença para o banco de dados
+        async function updateMyPresence(statusState) {
+            if (!supabaseClient || !currentUser) return;
+            try {
+                await supabaseClient
+                    .from('galatic_users')
+                    .update({ 
+                        status: statusState, 
+                        last_seen: new Date().toISOString() 
+                    })
+                    .eq('uid', currentUser.uid);
+            } catch (err) {
+                console.warn("Erro ao atualizar presença estelar:", err);
+            }
+        }
+
+        // Heartbeat dinâmico para garantir que o utilizador consta como Online apenas com a aba aberta e em foco
+        function startHeartbeat() {
+            if (lastSeenTimeout) clearInterval(lastSeenTimeout);
+            lastSeenTimeout = setInterval(() => {
+                if (document.visibilityState === "visible") {
+                    updateMyPresence("online");
+                }
+            }, 10000); // Sinaliza presença ativa a cada 10 segundos
+        }
+
+        function stopHeartbeat() {
+            if (lastSeenTimeout) {
+                clearInterval(lastSeenTimeout);
+                lastSeenTimeout = null;
+            }
+        }
+
+        /*
+        * ==========================================
         * GALAXY CANVAS GENERATOR (Motor de Galáxia 3D Imersiva)
         * ==========================================
+        * Renderiza uma galáxia espiral 3D realista usando simulação física.
         */
         function initGalaxyBackground() {
             const canvas = document.getElementById('galaxy-canvas');
@@ -672,28 +873,33 @@
                 create3DGalaxy();
             });
 
+            // Parâmetros de perspetiva da galáxia 3D
             const fov = 400; 
-            const angleX = 1.1; 
+            const angleX = 1.1; // Inclinação da galáxia para o efeito 3D imersivo
 
             class Star3D {
                 constructor() {
                     this.reset();
                 }
                 reset() {
+                    // Distribuir ao longo de braços espirais matemáticos
                     const arms = 3;
                     const arm = Math.floor(Math.random() * arms);
                     const armAngle = (arm * 2 * Math.PI) / arms;
+                    
+                    // Distância do centro (Rendimento exponencial para maior densidade no núcleo)
                     const distance = Math.pow(Math.random(), 2.5) * (width * 0.45);
                     const angle = armAngle + (distance * 0.015) + (Math.random() * 0.4 - 0.2);
                     
+                    // Coordenadas cartesianas no plano galático
                     this.x = Math.cos(angle) * distance;
-                    this.y = (Math.random() * 0.1 - 0.05) * distance; 
+                    this.y = (Math.random() * 0.1 - 0.05) * distance; // Disc vertical thickness
                     this.z = Math.sin(angle) * distance;
 
                     this.size = Math.random() * 1.5 + 0.3;
                     this.color = this.getCosmicColor(distance);
                     this.alpha = Math.random() * 0.8 + 0.2;
-                    this.orbitSpeed = (Math.random() * 0.002 + 0.001) * (150 / (distance + 40)); 
+                    this.orbitSpeed = (Math.random() * 0.002 + 0.001) * (150 / (distance + 40)); // Kepler speed
                 }
                 getCosmicColor(distance) {
                     const ratio = distance / (width * 0.45);
@@ -862,6 +1068,36 @@
                 requestAnimationFrame(animateMeteors);
             }
             animateMeteors();
+        }
+
+        /*
+        * ==========================================
+        * CAIXA DE CONFIRMAÇÃO CÓSMICA PERSONALIZADA (Substitui Alertas e Confirmações do Navegador)
+        * ==========================================
+        */
+        function showCosmicConfirm(title, description, onConfirm, onCancel = null, okText = "Confirmar", cancelText = "Cancelar") {
+            const modal = document.getElementById('modal-confirm');
+            document.getElementById('confirm-title').innerText = title;
+            document.getElementById('confirm-description').innerText = description;
+            
+            const btnCancel = document.getElementById('btn-confirm-cancel');
+            const btnOk = document.getElementById('btn-confirm-ok');
+            
+            btnCancel.innerText = cancelText;
+            btnOk.innerText = okText;
+            
+            modal.classList.remove('hidden');
+            
+            const close = () => modal.classList.add('hidden');
+            
+            btnCancel.onclick = () => { 
+                close(); 
+                if (onCancel) onCancel();
+            };
+            btnOk.onclick = () => { 
+                close(); 
+                onConfirm(); 
+            };
         }
 
         /*
@@ -1054,11 +1290,8 @@
                     currentUser = data;
                     localStorage.setItem('galatic_logged_user', JSON.stringify(currentUser));
                     
-                    // Definir o utilizador online no banco de dados
-                    await supabaseClient
-                        .from('galatic_users')
-                        .update({ status: 'online', last_seen: new Date().toISOString() })
-                        .eq('uid', currentUser.uid);
+                    // Definir o utilizador online no banco de dados ao fazer login
+                    await updateMyPresence("online");
 
                     showCosmicToast("Sessão Iniciada", `Sinal do explorador ${currentUser.nick} sintonizado!`, "success");
                     enterMainSystem();
@@ -1087,10 +1320,34 @@
             document.getElementById('my-uid').innerText = `#${currentUser.id_tag}`;
             document.getElementById('my-status-text').innerText = currentUser.bio || "Ativo na Órbita";
 
+            // Pedir permissões nativas para notificações ao iniciar o app principal
+            requestNotificationPermission();
+
+            // Seta status online explicitamente e inicia monitoramento do Heartbeat
+            updateMyPresence("online");
+            startHeartbeat();
+
             // Iniciar sincronização e realtime
             loadMyBlocks();
             loadConversations();
             setupGlobalRealtime();
+        }
+
+        /*
+        * ==========================================
+        * NATIVE NOTIFICATION SYSTEM (Para atalhos de PWA e segundo plano)
+        * ==========================================
+        */
+        async function requestNotificationPermission() {
+            if ("Notification" in window) {
+                if (Notification.permission === "default") {
+                    try {
+                        await Notification.requestPermission();
+                    } catch (e) {
+                        console.warn("Erro ao pedir permissões de notificação nativas:", e);
+                    }
+                }
+            }
         }
 
         /*
@@ -1165,19 +1422,33 @@
                                     const sender = usersCache[msg.sender_uid];
                                     const senderName = sender ? sender.nick : 'Desconhecido';
                                     showCosmicToast(`Mensagem de ${senderName}`, msg.content || "Enviou um ficheiro cósmico", "info");
+
+                                    // DISPARA NOTIFICAÇÃO NATIVA (EXTREMA) MESMO COM APP FECHADO / SEGUNDO PLANO
+                                    if (Notification.permission === "granted") {
+                                        const senderUser = usersCache[msg.sender_uid];
+                                        const pushTitle = senderUser ? `Galatic Chat - ${senderUser.nick}` : "Nova Mensagem Cósmica";
+                                        new Notification(pushTitle, {
+                                            body: msg.content || "Enviou uma transmissão cósmica",
+                                            icon: senderUser ? senderUser.avatar_url : 'notifica1943.png',
+                                            vibrate: [200, 100, 200]
+                                        });
+                                    }
                                 }
                             }
                         }
                     }
                 });
 
-                // Toca a notificação sonora apenas para mensagens novas recebidas fora da carga inicial
+                // Toca a notificação sonora para qualquer mensagem nova recebida fora da carga inicial (dentro ou fora de conversas)
                 if (hasNewIncomingMessageAnywhere && !isInitialLoad) {
                     triggerMessageNotification();
                 }
 
                 // Finaliza carga inicial após o processamento da primeira lista de mensagens
                 isInitialLoad = false;
+
+                // Sincronizar e carregar todos os Status Cósmicos ativos das últimas 24 horas
+                await loadStatuses();
 
                 renderConversationsList(usersData, activeChatsMap);
             } catch (err) {
@@ -1242,6 +1513,26 @@
                     ? `<span class="bg-emerald-500 text-black text-[10px] font-extrabold w-5 h-5 flex items-center justify-center rounded-full animate-bounce">${unreadCount}</span>` 
                     : '';
 
+                // Verifica se este utilizador possui algum status ativo nas últimas 24h
+                const userHasActiveStatus = statusesList.some(s => s.user_uid === user.uid);
+                
+                let avatarHTML = '';
+                if (userHasActiveStatus) {
+                    avatarHTML = `
+                        <div class="relative w-11 h-11 flex items-center justify-center">
+                            <!-- Moldura de status rotativa independente para impedir que a foto do utilizador gire -->
+                            <div class="absolute inset-0 rounded-full border-2 border-dashed border-pink-500 animate-spin" style="animation-duration: 15s;"></div>
+                            <img src="${user.avatar_url}" class="w-9 h-9 rounded-full object-cover z-10" alt="Avatar">
+                        </div>
+                    `;
+                } else {
+                    avatarHTML = `
+                        <div class="relative w-11 h-11 flex items-center justify-center">
+                            <img src="${user.avatar_url}" class="w-10 h-10 rounded-full object-cover border border-white/10" alt="Avatar">
+                        </div>
+                    `;
+                }
+
                 const card = document.createElement('div');
                 card.className = `p-3 mx-2 my-1 rounded-xl flex items-center justify-between hover:bg-white/5 cursor-pointer transition relative ${activeChatUser && activeChatUser.uid === user.uid ? 'bg-white/5' : ''}`;
                 card.onclick = () => selectActiveChat(user);
@@ -1249,8 +1540,8 @@
                 card.innerHTML = `
                     <div class="flex items-center gap-3 min-w-0">
                         <div class="relative flex-shrink-0">
-                            <img src="${user.avatar_url}" class="w-11 h-11 rounded-full object-cover border border-white/10" alt="Avatar">
-                            <span class="absolute bottom-0 right-0 w-3 h-3 ${statusColor} border-2 border-black rounded-full"></span>
+                            ${avatarHTML}
+                            <span class="absolute bottom-0 right-0 w-3 h-3 ${statusColor} border-2 border-black rounded-full z-20"></span>
                         </div>
                         <div class="min-w-0">
                             <div class="flex items-center gap-1">
@@ -1320,6 +1611,9 @@
             indicator.className = `absolute bottom-0 right-0 w-3 h-3 bg-gray-500 border-2 border-black rounded-full ${user.status === 'online' ? 'bg-green-500' : 'bg-gray-500'}`;
 
             updateBlockButtonUI();
+            
+            // Força a re-sincronização do hash para garantir que renderiza ao carregar a conversa nova
+            lastMessagesHash = ""; 
             await fetchMessagesForCurrentChat();
             
             // Força a atualização do layout responsivo com base no novo estado do chat ativo
@@ -1363,7 +1657,25 @@
 
                 if (error) throw error;
 
-                messagesList = data || [];
+                // Armazena as novas mensagens e dispara notificação sonora se necessário
+                const newMessages = data || [];
+                let hasNewIncomingMessage = false;
+
+                newMessages.forEach(msg => {
+                    if (!seenMessagesIds.has(msg.uid)) {
+                        seenMessagesIds.add(msg.uid);
+                        // Só notifica se for uma mensagem nova recebida de outro utilizador no chat ativo
+                        if (msg.sender_uid !== currentUser.uid) {
+                            hasNewIncomingMessage = true;
+                        }
+                    }
+                });
+
+                if (hasNewIncomingMessage && !isInitialLoad) {
+                    triggerMessageNotification();
+                }
+
+                messagesList = newMessages;
                 renderMessages();
             } catch (err) {
                 console.error(err);
@@ -1371,12 +1683,23 @@
         }
 
         function renderMessages() {
+            // Compara o hash das mensagens para impedir re-renderização e saltos de scroll quando nada mudou
+            const currentHash = messagesList.map(m => `${m.uid}-${m.content}`).join('|');
+            if (currentHash === lastMessagesHash) {
+                return; // Impede que o scroll suba ou trave de 1.5s em 1.5s!
+            }
+            lastMessagesHash = currentHash;
+
             const container = document.getElementById('messages-scroller');
+            
+            // Verifica se o utilizador está atualmente próximo do fundo (dentro de 150px) para decidir se rola automaticamente
+            const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 150;
+
             container.innerHTML = "";
 
             if (messagesList.length === 0) {
                 container.innerHTML = `
-                    <div class="flex flex-col items-center justify-center h-full text-center p-6 text-gray-500 space-y-1">
+                    <div class="flex flex-col items-center justify-center h-full text-center p-6 text-gray-400 space-y-1">
                         <i data-lucide="satellite-dish" class="w-8 h-8 text-indigo-400/30"></i>
                         <p class="text-xs">Canal sintonizado. Escreva a sua primeira transmissão.</p>
                     </div>`;
@@ -1439,8 +1762,12 @@
                 container.appendChild(msgWrapper);
             });
 
+            // Gerenciamento Inteligente de Rolagem (Smart Scroll)
             setTimeout(() => {
-                container.scrollTop = container.scrollHeight;
+                // Apenas rola para baixo se for carga inicial ou se o utilizador já estava lendo as mensagens mais recentes do fundo
+                if (isNearBottom || messagesList.length === 1) {
+                    container.scrollTop = container.scrollHeight;
+                }
             }, 50);
 
             lucide.createIcons();
@@ -1503,7 +1830,13 @@
                 cancelMessageReply();
                 await fetchMessagesForCurrentChat();
                 
-                // Atualizar lista lateral imediatamente para posicionar a conversa ativa no topo!
+                // Força o scroll para o fundo no envio manual de mensagem do utilizador
+                const container = document.getElementById('messages-scroller');
+                if (container) {
+                    container.scrollTop = container.scrollHeight;
+                }
+
+                // Sintoniza e reordena contactos lateralmente
                 await loadConversations();
             } catch (err) {
                 console.error(err);
@@ -1572,45 +1905,53 @@
             menu.classList.toggle('hidden');
         }
 
-        async function clearCurrentChat() {
+        function clearCurrentChat() {
             toggleChatMenu();
-            if (!confirm("Pretende limpar todo o histórico local com este explorador?")) return;
+            showCosmicConfirm(
+                "Limpar Histórico Local?",
+                "Pretende limpar todo o histórico local com este explorador de ambos os lados?",
+                async () => {
+                    try {
+                        const { error } = await supabaseClient
+                            .from('galatic_messages')
+                            .delete()
+                            .eq('sender_uid', currentUser.uid)
+                            .eq('receiver_uid', activeChatUser.uid);
 
-            try {
-                const { error } = await supabaseClient
-                    .from('galatic_messages')
-                    .delete()
-                    .eq('sender_uid', currentUser.uid)
-                    .eq('receiver_uid', activeChatUser.uid);
+                        if (error) throw error;
 
-                if (error) throw error;
-
-                showCosmicToast("Limpeza Efetuada", "Histórico de envio apagado.", "success");
-                await fetchMessagesForCurrentChat();
-                await loadConversations();
-            } catch (err) {
-                console.error(err);
-            }
+                        showCosmicToast("Limpeza Efetuada", "Histórico de envio apagado.", "success");
+                        await fetchMessagesForCurrentChat();
+                        await loadConversations();
+                    } catch (err) {
+                        console.error(err);
+                    }
+                }
+            );
         }
 
-        async function deleteCurrentChat() {
+        function deleteCurrentChat() {
             toggleChatMenu();
-            if (!confirm("Tem a certeza que quer desintegrar totalmente esta conversa nos dois lados da galáxia?")) return;
+            showCosmicConfirm(
+                "Desintegrar Conversa?",
+                "Tem a certeza que quer desintegrar totalmente esta conversa nos dois lados da galáxia?",
+                async () => {
+                    try {
+                        const { error } = await supabaseClient
+                            .from('galatic_messages')
+                            .delete()
+                            .or(`and(sender_uid.eq.${currentUser.uid},receiver_uid.eq.${activeChatUser.uid}),and(sender_uid.eq.${activeChatUser.uid},receiver_uid.eq.${currentUser.uid})`);
 
-            try {
-                const { error } = await supabaseClient
-                    .from('galatic_messages')
-                    .delete()
-                    .or(`and(sender_uid.eq.${currentUser.uid},receiver_uid.eq.${activeChatUser.uid}),and(sender_uid.eq.${activeChatUser.uid},receiver_uid.eq.${currentUser.uid})`);
+                        if (error) throw error;
 
-                if (error) throw error;
-
-                showCosmicToast("Canal Desintegrado", "Mensagens eliminadas para ambos os utilizadores.", "success");
-                await fetchMessagesForCurrentChat();
-                await loadConversations();
-            } catch (err) {
-                console.error(err);
-            }
+                        showCosmicToast("Canal Desintegrado", "Mensagens eliminadas para ambos os utilizadores.", "success");
+                        await fetchMessagesForCurrentChat();
+                        await loadConversations();
+                    } catch (err) {
+                        console.error(err);
+                    }
+                }
+            );
         }
 
         async function toggleBlockContact() {
@@ -1766,7 +2107,8 @@
 
                 // 2. Criar ficheiro novo com carimbo de tempo para quebrar a cache do browser
                 const fileExt = file.name.split('.').pop();
-                const newFileName = `${currentUser.uid}_${Date.now()}.${fileExt}`;
+                const nowTimestamp = Date.now();
+                const newFileName = `${currentUser.uid}_${nowTimestamp}.${fileExt}`;
                 const filePath = `avatars/${newFileName}`;
 
                 // 3. Fazer upload da nova imagem
@@ -1780,7 +2122,8 @@
                     .from('profile_photos')
                     .getPublicUrl(filePath);
 
-                const avatarUrl = publicData.publicUrl;
+                // Força um parâmetro timestamp na URL pública para contornar a cache agressiva do browser
+                const avatarUrl = `${publicData.publicUrl}?t=${nowTimestamp}`;
 
                 // 4. Gravar na tabela do Supabase a nova URL
                 const { error: updateErr } = await supabaseClient
@@ -1858,49 +2201,53 @@
         }
 
         function clearLocalCache() {
-            if (confirm("Deseja redefinir os dados temporários locais deste dispositivo?")) {
-                localStorage.clear();
-                window.location.reload();
-            }
+            showCosmicConfirm(
+                "Limpar Frequência Local?",
+                "Deseja redefinir e apagar os dados cósmicos temporários deste dispositivo?",
+                () => {
+                    localStorage.clear();
+                    window.location.reload();
+                }
+            );
         }
 
         async function logoutUser() {
+            // Seta offline no Supabase antes de sair
+            await updateMyPresence("offline");
+
             // Limpa o loop de atualização HTTP antes de fechar a sessão
             if (pollingInterval) {
                 clearInterval(pollingInterval);
                 pollingInterval = null;
             }
 
-            try {
-                await supabaseClient
-                    .from('galatic_users')
-                    .update({ status: 'offline', last_seen: new Date().toISOString() })
-                    .eq('uid', currentUser.uid);
-            } catch (e) {}
-
             localStorage.removeItem('galatic_logged_user');
             window.location.reload();
         }
 
-        async function deleteMyAccount() {
-            if (!confirm("AVISO CRÍTICO: Pretende realmente desintegrar e eliminar permanentemente a sua conta de toda a galáxia?")) return;
+        function deleteMyAccount() {
+            showCosmicConfirm(
+                "Excluir Conta Permanentemente?",
+                "Esta acção é definitiva e desintegrará todos os seus registos da galáxia.",
+                async () => {
+                    try {
+                        const { error } = await supabaseClient
+                            .from('galatic_users')
+                            .delete()
+                            .eq('uid', currentUser.uid);
 
-            try {
-                const { error } = await supabaseClient
-                    .from('galatic_users')
-                    .delete()
-                    .eq('uid', currentUser.uid);
+                        if (error) throw error;
 
-                if (error) throw error;
-
-                showCosmicToast("Registo Removido", "Os seus dados foram removidos da rede.", "info");
-                localStorage.removeItem('galatic_logged_user');
-                setTimeout(() => {
-                    window.location.reload();
-                }, 1500);
-            } catch (err) {
-                console.error(err);
-            }
+                        showCosmicToast("Frequência Apagada", "Registro excluído permanentemente da rede.", "info");
+                        localStorage.removeItem('galatic_logged_user');
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1500);
+                    } catch (err) {
+                        console.error(err);
+                    }
+                }
+            );
         }
 
         /*
@@ -1962,6 +2309,15 @@
                 const senderName = sender ? sender.nick : 'Desconhecido';
                 showCosmicToast(`Mensagem de ${senderName}`, msg.content || "Enviou um ficheiro cósmico", "info");
 
+                // DISPARA NOTIFICAÇÃO NATIVA (EXTREMA) SE ESTIVER EM BACKGROUND OU FORA DA CONVERSA
+                if (Notification.permission === "granted") {
+                    new Notification(`Galatic Chat - ${senderName}`, {
+                        body: msg.content || "Enviou uma transmissão cósmica",
+                        icon: sender ? sender.avatar_url : 'notifica1943.png',
+                        vibrate: [200, 100, 200]
+                    });
+                }
+
                 // Re-renderiza conversas para desenhar o distintivo verde (Badge)
                 loadConversations();
             }
@@ -1979,6 +2335,494 @@
                 renderMessages();
                 loadConversations();
             }
+        }
+
+        /*
+        * ==========================================
+        * GESTÃO DE STATUS CÓSMICOS (Stories horizontais estilo WhatsApp)
+        * ==========================================
+        */
+
+        // Carrega todos os status ativamente do banco de dados e limpa os expirados (> 24h)
+        async function loadStatuses() {
+            try {
+                const { data, error } = await supabaseClient
+                    .from('galatic_status')
+                    .select('*')
+                    .order('created_at', { ascending: true });
+
+                // Trata o erro PGRST205 (Tabela não encontrada no schema cache) de forma graciosa
+                if (error) {
+                    if (error.code === 'PGRST205' || error.message.includes('Could not find')) {
+                        console.warn("A tabela de status ainda não foi criada ou propagada no Supabase. O carrossel de status cósmicos foi desativado temporariamente.");
+                        statusesList = [];
+                        renderStatusCarousel();
+                        return;
+                    }
+                    throw error;
+                }
+
+                const now = Date.now();
+                const limit24h = 24 * 60 * 60 * 1000;
+
+                // Filtrar na memória do cliente apenas os status válidos com menos de 24 horas
+                statusesList = (data || []).filter(status => {
+                    const elapsed = now - new Date(status.created_at).getTime();
+                    return elapsed < limit24h;
+                });
+
+                renderStatusCarousel();
+            } catch (err) {
+                console.error("Erro ao carregar status:", err);
+            }
+        }
+
+        function renderStatusCarousel() {
+            const container = document.getElementById('status-carousel-container');
+            if (!container) return;
+            container.innerHTML = "";
+
+            // 1. Cria a bolinha do "Meu Status" (Postar) no início
+            const myStatusCircle = document.createElement('div');
+            myStatusCircle.className = "flex flex-col items-center flex-shrink-0 cursor-pointer relative group";
+            myStatusCircle.onclick = openPublishStatusModal;
+
+            // Vemos se nós temos algum status ativo para colocar a borda brilhante
+            const iHaveStatus = statusesList.some(s => s.user_uid === currentUser.uid);
+            
+            let myAvatarHTML = '';
+            if (iHaveStatus) {
+                myAvatarHTML = `
+                    <div class="relative w-12 h-12 flex items-center justify-center rounded-full bg-black/30">
+                        <div class="absolute inset-0 rounded-full border-2 border-dashed border-pink-500 animate-spin" style="animation-duration: 15s;"></div>
+                        <img src="${currentUser.avatar_url}" class="w-10 h-10 rounded-full object-cover z-10">
+                        <span class="absolute bottom-0 right-0 bg-pink-500 border-2 border-black w-4 h-4 rounded-full flex items-center justify-center text-[10px] font-bold text-white group-hover:scale-110 transition z-20">+</span>
+                    </div>
+                `;
+            } else {
+                myAvatarHTML = `
+                    <div class="relative w-12 h-12 flex items-center justify-center rounded-full bg-black/30">
+                        <img src="${currentUser.avatar_url}" class="w-10 h-10 rounded-full object-cover border border-white/10">
+                        <span class="absolute bottom-0 right-0 bg-pink-500 border-2 border-black w-4 h-4 rounded-full flex items-center justify-center text-[10px] font-bold text-white group-hover:scale-110 transition z-20">+</span>
+                    </div>
+                `;
+            }
+
+            myStatusCircle.innerHTML = `
+                ${myAvatarHTML}
+                <span class="text-[9px] text-gray-300 mt-1 max-w-[60px] truncate">O meu Status</span>
+            `;
+            container.appendChild(myStatusCircle);
+
+            // 2. Agrupa todos os status válidos por utilizador que os postou
+            const groupedStatuses = {};
+            statusesList.forEach(status => {
+                if (status.user_uid === currentUser.uid) return; // ignora o meu, que já tem visualizador próprio ou atalho
+                if (!groupedStatuses[status.user_uid]) {
+                    groupedStatuses[status.user_uid] = [];
+                }
+                groupedStatuses[status.user_uid].push(status);
+            });
+
+            // 3. Renderiza a bolinha de cada utilizador com status ativo
+            Object.keys(groupedStatuses).forEach(userUid => {
+                const user = usersCache[userUid];
+                if (!user) return;
+
+                const userStatusCircle = document.createElement('div');
+                userStatusCircle.className = "flex flex-col items-center flex-shrink-0 cursor-pointer";
+                userStatusCircle.onclick = () => openStatusViewer(userUid);
+
+                userStatusCircle.innerHTML = `
+                    <div class="relative w-12 h-12 flex items-center justify-center rounded-full bg-black/30">
+                        <!-- Moldura rotativa sem girar o avatar do utilizador -->
+                        <div class="absolute inset-0 rounded-full border-2 border-dashed border-pink-500 animate-spin" style="animation-duration: 15s;"></div>
+                        <img src="${user.avatar_url}" class="w-10 h-10 rounded-full object-cover z-10">
+                    </div>
+                    <span class="text-[9px] text-gray-300 mt-1 max-w-[60px] truncate">${user.nick}</span>
+                `;
+                container.appendChild(userStatusCircle);
+            });
+        }
+
+        // Funções para Controle do Modal de Publicar Status
+        function openPublishStatusModal() {
+            // Se tiver status próprio e quiser ver em vez de postar diretamente
+            const myStatusCount = statusesList.filter(s => s.user_uid === currentUser.uid).length;
+            if (myStatusCount > 0) {
+                showCosmicConfirm(
+                    "O meu Status Ativo",
+                    "Deseja visualizar os seus status cósmicos ativos ou publicar uma nova transmissão?",
+                    () => { openStatusViewer(currentUser.uid); },
+                    () => { openPublishStatusModalDirect(); },
+                    "Ver Status",
+                    "Novo Status"
+                );
+                return;
+            }
+
+            openPublishStatusModalDirect();
+        }
+
+        function openPublishStatusModalDirect() {
+            removeSelectedStatusMedia(); // Reseta qualquer seleção anterior
+            document.getElementById('status-caption-input').value = "";
+            document.getElementById('modal-publish-status').classList.remove('hidden');
+        }
+
+        function closePublishStatusModal() {
+            document.getElementById('modal-publish-status').classList.add('hidden');
+        }
+
+        // Aciona o input correto de arquivo (Galeria ou Câmara) de forma idêntica ao WhatsApp
+        function triggerStatusUpload(sourceType) {
+            if (sourceType === 'gallery') {
+                document.getElementById('status-gallery-input').click();
+            } else if (sourceType === 'camera') {
+                document.getElementById('status-camera-input').click();
+            }
+        }
+
+        // Lida com a seleção de arquivos para o Status (Imagem, Vídeo, Áudio) e validação de duração
+        async function handleStatusMediaSelected(sourceType) {
+            const fileInput = sourceType === 'gallery' ? document.getElementById('status-gallery-input') : document.getElementById('status-camera-input');
+            const file = fileInput.files[0];
+            if (!file) return;
+
+            // Restrição de limite de tempo estilo WhatsApp: Vídeo no máximo 1 minuto (60 segundos)
+            if (file.type.startsWith('video/')) {
+                showCosmicToast("Análise Estelar", "A analisar duração da transmissão...", "info");
+                const videoElement = document.createElement('video');
+                videoElement.preload = 'metadata';
+                videoElement.src = URL.createObjectURL(file);
+                
+                videoElement.onloadedmetadata = function() {
+                    URL.revokeObjectURL(videoElement.src);
+                    if (videoElement.duration > 60) {
+                        showCosmicToast("Limite Excedido", "Transmissões de vídeo nos status estão limitadas a 1 minuto máximo no WhatsApp.", "error");
+                        fileInput.value = "";
+                        removeSelectedStatusMedia();
+                    } else {
+                        showPreviewOfStatusMedia(file);
+                    }
+                };
+                return;
+            }
+
+            showPreviewOfStatusMedia(file);
+        }
+
+        function showPreviewOfStatusMedia(file) {
+            selectedStatusFile = file;
+            
+            const previewContainer = document.getElementById('status-media-preview-container');
+            const previewBox = document.getElementById('status-media-preview-box');
+            
+            previewContainer.classList.remove('hidden');
+            previewBox.innerHTML = "";
+
+            const fileUrl = URL.createObjectURL(file);
+
+            if (file.type.startsWith('image/')) {
+                previewBox.innerHTML = `<img src="${fileUrl}" class="max-h-32 rounded-lg object-contain border border-white/10 shadow-md">`;
+            } else if (file.type.startsWith('video/')) {
+                previewBox.innerHTML = `<video src="${fileUrl}" controls class="max-h-32 rounded-lg object-contain border border-white/10 shadow-md"></video>`;
+            } else if (file.type.startsWith('audio/')) {
+                previewBox.innerHTML = `
+                    <div class="p-4 rounded-lg bg-white/5 border border-white/10 flex items-center gap-2">
+                        <i data-lucide="music" class="w-5 h-5 text-indigo-400"></i>
+                        <span class="text-xs text-gray-300">Áudio Estelar Carregado</span>
+                    </div>`;
+                lucide.createIcons();
+            }
+        }
+
+        function removeSelectedStatusMedia() {
+            selectedStatusFile = null;
+            document.getElementById('status-gallery-input').value = "";
+            document.getElementById('status-camera-input').value = "";
+            document.getElementById('status-media-preview-container').classList.add('hidden');
+            document.getElementById('status-media-preview-box').innerHTML = "";
+        }
+
+        async function publishStatus() {
+            const captionInput = document.getElementById('status-caption-input');
+            const caption = captionInput.value.trim();
+
+            if (!selectedStatusFile && !caption) {
+                showCosmicToast("Entrada Vazia", "Adicione pelo menos uma legenda ou mídia para espalhar no cosmos.", "error");
+                return;
+            }
+
+            const btn = document.getElementById('btn-publish-status-submit');
+            btn.disabled = true;
+            btn.innerText = "A transmitir status para o espaço...";
+
+            try {
+                let mediaUrl = null;
+                let mediaType = "text";
+
+                if (selectedStatusFile) {
+                    const fileExt = selectedStatusFile.name.split('.').pop();
+                    const fileName = `${currentUser.uid}_${Date.now()}.${fileExt}`;
+                    
+                    let bucketName = "chat_files";
+                    if (selectedStatusFile.type.startsWith('image/')) {
+                        bucketName = "chat_images";
+                        mediaType = "image";
+                    } else if (selectedStatusFile.type.startsWith('video/')) {
+                        bucketName = "chat_videos";
+                        mediaType = "video";
+                    } else if (selectedStatusFile.type.startsWith('audio/')) {
+                        bucketName = "chat_files";
+                        mediaType = "audio";
+                    }
+
+                    // Faz upload da mídia para o Supabase Storage
+                    const { data, error } = await supabaseClient.storage
+                        .from(bucketName)
+                        .upload(`status/${fileName}`, selectedStatusFile, { cacheControl: '3600', upsert: true });
+
+                    if (error) throw error;
+
+                    const { data: publicData } = supabaseClient.storage
+                        .from(bucketName)
+                        .getPublicUrl(`status/${fileName}`);
+
+                    mediaUrl = publicData.publicUrl;
+                }
+
+                // Cria o registro do status no Supabase de forma correta
+                const newStatus = {
+                    user_uid: currentUser.uid,
+                    media_type: mediaType,
+                    media_url: mediaUrl,
+                    caption: caption
+                };
+
+                const { error: dbErr } = await supabaseClient
+                    .from('galatic_status')
+                    .insert([newStatus]); // BUG CORRIGIDO: Agora aponta corretamente para 'newStatus'
+
+                if (dbErr) throw dbErr;
+
+                showCosmicToast("Status Publicado", "A sua transmissão cósmica foi espalhada pela galáxia!", "success");
+                closePublishStatusModal();
+                await loadStatuses();
+                await loadConversations(); // Atualiza os círculos na lateral
+            } catch (err) {
+                console.error(err);
+                showCosmicToast("Falha de Comunicação", "Erro ao publicar o seu status. Certifique-se de que correu o script SQL no Supabase.", "error");
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `<i data-lucide="rocket" class="w-4 h-4"></i> Publicar Status`;
+                lucide.createIcons();
+            }
+        }
+
+        /*
+        * ==========================================
+        * VISUALIZADOR DE STATUS CÓSMICOS (Stories Viewer)
+        * ==========================================
+        */
+        function openStatusViewer(userUid) {
+            currentStatusUserUid = userUid;
+            statusIndex = 0;
+
+            const userStatuses = statusesList.filter(s => s.user_uid === userUid);
+            if (userStatuses.length === 0) return;
+
+            const user = userUid === currentUser.uid ? currentUser : usersCache[userUid];
+            if (!user) return;
+
+            document.getElementById('status-v-avatar').src = user.avatar_url;
+            document.getElementById('status-v-nick').innerText = user.nick;
+
+            document.getElementById('modal-status-viewer').classList.remove('hidden');
+
+            renderStatusSlide();
+        }
+
+        function renderStatusSlide() {
+            const userStatuses = statusesList.filter(s => s.user_uid === currentStatusUserUid);
+            if (statusIndex >= userStatuses.length) {
+                closeStatusViewer();
+                return;
+            }
+            if (statusIndex < 0) {
+                statusIndex = 0;
+            }
+
+            const status = userStatuses[statusIndex];
+            const date = new Date(status.created_at);
+            const timeStr = `Publicado às ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+            document.getElementById('status-v-time').innerText = timeStr;
+
+            // Mostra o botão para eliminar o status apenas se pertencer ao próprio utilizador logado
+            const deleteBtn = document.getElementById('btn-delete-active-status');
+            if (status.user_uid === currentUser.uid) {
+                deleteBtn.classList.remove('hidden');
+                deleteBtn.onclick = () => {
+                    showCosmicConfirm(
+                        "Eliminar Status?",
+                        "Deseja remover este slide de status permanentemente do cosmos?",
+                        () => { deleteStatusItem(status.uid); }
+                    );
+                };
+            } else {
+                deleteBtn.classList.add('hidden');
+            }
+
+            // Renderiza legenda
+            const captionEl = document.getElementById('status-v-caption');
+            if (status.caption) {
+                captionEl.innerText = status.caption;
+                captionEl.classList.remove('hidden');
+            } else {
+                captionEl.innerText = "";
+                captionEl.classList.add('hidden');
+            }
+
+            // Desenha barras de progresso superiores estilo stories do WhatsApp
+            const progressContainer = document.getElementById('status-progress-bars');
+            progressContainer.innerHTML = "";
+            userStatuses.forEach((s, idx) => {
+                const bar = document.createElement('div');
+                bar.className = "h-1 flex-1 bg-white/20 rounded-full overflow-hidden";
+                
+                let fillWidth = "0%";
+                if (idx < statusIndex) fillWidth = "100%"; // Já concluído
+                
+                bar.innerHTML = `<div class="h-full bg-pink-500 transition-all duration-100 ease-linear" id="progress-bar-fill-${idx}" style="width: ${fillWidth}"></div>`;
+                progressContainer.appendChild(bar);
+            });
+
+            // Renderiza a mídia centralizada de acordo com o tipo
+            const contentContainer = document.getElementById('status-viewer-content');
+            contentContainer.innerHTML = "";
+
+            if (status.media_type === 'image') {
+                contentContainer.innerHTML = `<img src="${status.media_url}" class="max-w-full max-h-[70vh] rounded-2xl object-contain shadow-2xl border border-white/5">`;
+            } else if (status.media_type === 'video') {
+                contentContainer.innerHTML = `<video id="status-video-active" src="${status.media_url}" autoplay playsinline class="max-w-full max-h-[70vh] rounded-2xl object-contain shadow-2xl border border-white/5"></video>`;
+            } else if (status.media_type === 'audio') {
+                contentContainer.innerHTML = `
+                    <div class="p-6 rounded-2xl bg-white/5 border border-white/10 flex flex-col items-center gap-4 max-w-sm w-full glass-card">
+                        <i data-lucide="mic" class="w-12 h-12 text-pink-500 animate-pulse"></i>
+                        <span class="text-xs text-gray-300 uppercase tracking-widest font-semibold font-sans">Mensagem de Áudio Cósmica</span>
+                        <audio id="status-audio-active" src="${status.media_url}" autoplay controls class="w-full"></audio>
+                    </div>`;
+                lucide.createIcons();
+            } else {
+                // Apenas Texto (estilo stories colorido premium)
+                contentContainer.innerHTML = `
+                    <div class="px-6 py-12 max-w-md w-full bg-gradient-to-br from-indigo-500/20 to-pink-500/20 rounded-2xl border border-white/10 shadow-2xl flex items-center justify-center min-h-[30vh]">
+                        <p class="text-xl md:text-2xl font-extrabold cosmic-gradient-text leading-relaxed whitespace-pre-wrap">${escapeHTML(status.caption)}</p>
+                    </div>`;
+                // Esconde a legenda duplicada abaixo
+                captionEl.classList.add('hidden');
+            }
+
+            // Inicia o temporizador do slide de progresso automático (6 segundos por slide, ou tempo do vídeo/áudio se maior)
+            if (statusTimer) clearInterval(statusTimer);
+            
+            let duration = 6000; // 6 segundos padrão
+            let currentProgress = 0;
+            const fillEl = document.getElementById(`progress-bar-fill-${statusIndex}`);
+
+            // Se for vídeo ou áudio, tenta sincronizar com a duração do arquivo
+            const mediaEl = document.getElementById('status-video-active') || document.getElementById('status-audio-active');
+            if (mediaEl) {
+                mediaEl.onloadedmetadata = () => {
+                    duration = (mediaEl.duration * 1000) || 6000;
+                };
+            }
+
+            const step = 100; // Atualiza a barra a cada 100 milissegundos
+            statusTimer = setInterval(() => {
+                currentProgress += step;
+                const percentage = Math.min(100, (currentProgress / duration) * 100);
+                if (fillEl) fillEl.style.width = `${percentage}%`;
+
+                if (currentProgress >= duration) {
+                    clearInterval(statusTimer);
+                    nextStatusSlide();
+                }
+            }, step);
+        }
+
+        async function deleteStatusItem(statusUid) {
+            try {
+                // Interrompe o temporizador atual para evitar transição automática durante o processo
+                if (statusTimer) clearInterval(statusTimer);
+
+                const statusItem = statusesList.find(s => s.uid === statusUid);
+                if (statusItem && statusItem.media_url) {
+                    let bucketName = "chat_files";
+                    if (statusItem.media_type === "image") bucketName = "chat_images";
+                    else if (statusItem.media_type === "video") bucketName = "chat_videos";
+
+                    const filePath = getStoragePathFromUrl(statusItem.media_url, bucketName);
+                    if (filePath) {
+                        await supabaseClient.storage.from(bucketName).remove([filePath]);
+                    }
+                }
+
+                // Exclui o status no banco de dados do Supabase
+                const { error } = await supabaseClient
+                    .from('galatic_status')
+                    .delete()
+                    .eq('uid', statusUid);
+
+                if (error) throw error;
+
+                showCosmicToast("Status Eliminado", "A publicação foi permanentemente removida do cosmos.", "success");
+                
+                // Recarrega todos os status atualizados do servidor
+                await loadStatuses();
+                await loadConversations();
+
+                const remainingStatuses = statusesList.filter(s => s.user_uid === currentStatusUserUid);
+                if (remainingStatuses.length === 0) {
+                    closeStatusViewer();
+                } else {
+                    // Sintoniza o índice atual para garantir consistência visual no slider
+                    statusIndex = Math.min(statusIndex, remainingStatuses.length - 1);
+                    renderStatusSlide();
+                }
+            } catch (err) {
+                console.error("Erro ao apagar status:", err);
+                showCosmicToast("Erro ao Apagar", "Não foi possível remover este status cósmico.", "error");
+            }
+        }
+
+        function nextStatusSlide() {
+            const userStatuses = statusesList.filter(s => s.user_uid === currentStatusUserUid);
+            statusIndex++;
+            if (statusIndex >= userStatuses.length) {
+                closeStatusViewer();
+            } else {
+                renderStatusSlide();
+            }
+        }
+
+        function prevStatusSlide() {
+            statusIndex--;
+            if (statusIndex < 0) {
+                statusIndex = 0;
+            }
+            renderStatusSlide();
+        }
+
+        function closeStatusViewer() {
+            if (statusTimer) clearInterval(statusTimer);
+            document.getElementById('modal-status-viewer').classList.add('hidden');
+            
+            // Para mídias ativas que ainda estejam a tocar
+            const video = document.getElementById('status-video-active');
+            const audio = document.getElementById('status-audio-active');
+            if (video) video.pause();
+            if (audio) audio.pause();
         }
 
         /*
