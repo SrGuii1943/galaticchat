@@ -329,8 +329,12 @@
                 
                 <!-- Estado Vazio / Mensagem de Boas-vindas -->
                 <div id="chat-welcome-state" class="flex-1 flex flex-col items-center justify-center text-center p-8 space-y-4">
-                    <div class="p-6 rounded-full bg-indigo-500/5 border border-indigo-500/10 animate-bounce">
-                        <i data-lucide="message-square" class="w-16 h-16 text-indigo-400/50"></i>
+                    <div class="relative w-48 h-48 flex items-center justify-center">
+                        <!-- Canvas interativo com meteoros ultra-suaves de 50% opacidade -->
+                        <canvas id="meteor-canvas" class="absolute inset-0 w-full h-full opacity-50 pointer-events-none"></canvas>
+                        <div class="relative z-10 p-6 rounded-full bg-indigo-500/5 border border-indigo-500/10">
+                            <i data-lucide="message-square" class="w-16 h-16 text-indigo-400/50"></i>
+                        </div>
                     </div>
                     <h2 class="text-2xl font-bold text-gray-200">Sincronizador Cósmico</h2>
                     <p class="text-xs text-gray-400 max-w-sm">Estabeleça uma ligação com outros viajantes espaciais para abrir um canal de mensagens criptografado.</p>
@@ -594,6 +598,7 @@
         let seenMessagesIds = new Set(); // Evita notificações e loops de áudio repetidos
         let unreadCountMap = {}; // Guarda número de mensagens não lidas por utilizador (uid -> quantidade)
         let pollingInterval = null; // Intervalo para sondagem de redundância HTTP
+        let isInitialLoad = true; // Controla se o aplicativo está carregando dados pela primeira vez
 
         // Inicialização do Áudio de Notificação
         const notificationSound = new Audio('notifica1943.mp3');
@@ -602,6 +607,7 @@
         window.onload = function() {
             lucide.createIcons();
             initGalaxyBackground();
+            initMeteorCanvas(); // Inicia os meteoros 3D imersivos dinamicamente
             initializeSupabaseConnection();
             setupResponsiveLayout();
         };
@@ -647,7 +653,6 @@
         * ==========================================
         * GALAXY CANVAS GENERATOR (Motor de Galáxia 3D Imersiva)
         * ==========================================
-        * Renderiza uma galáxia espiral 3D realista usando simulação física.
         */
         function initGalaxyBackground() {
             const canvas = document.getElementById('galaxy-canvas');
@@ -667,33 +672,28 @@
                 create3DGalaxy();
             });
 
-            // Parâmetros de perspetiva da galáxia 3D
             const fov = 400; 
-            const angleX = 1.1; // Inclinação da galáxia para o efeito 3D imersivo
+            const angleX = 1.1; 
 
             class Star3D {
                 constructor() {
                     this.reset();
                 }
                 reset() {
-                    // Distribuir ao longo de braços espirais matemáticos
                     const arms = 3;
                     const arm = Math.floor(Math.random() * arms);
                     const armAngle = (arm * 2 * Math.PI) / arms;
-                    
-                    // Distância do centro (Rendimento exponencial para maior densidade no núcleo)
                     const distance = Math.pow(Math.random(), 2.5) * (width * 0.45);
                     const angle = armAngle + (distance * 0.015) + (Math.random() * 0.4 - 0.2);
                     
-                    // Coordenadas cartesianas no plano galático
                     this.x = Math.cos(angle) * distance;
-                    this.y = (Math.random() * 0.1 - 0.05) * distance; // Disc vertical thickness
+                    this.y = (Math.random() * 0.1 - 0.05) * distance; 
                     this.z = Math.sin(angle) * distance;
 
                     this.size = Math.random() * 1.5 + 0.3;
                     this.color = this.getCosmicColor(distance);
                     this.alpha = Math.random() * 0.8 + 0.2;
-                    this.orbitSpeed = (Math.random() * 0.002 + 0.001) * (150 / (distance + 40)); // Kepler speed
+                    this.orbitSpeed = (Math.random() * 0.002 + 0.001) * (150 / (distance + 40)); 
                 }
                 getCosmicColor(distance) {
                     const ratio = distance / (width * 0.45);
@@ -787,24 +787,94 @@
 
         /*
         * ==========================================
-        * SISTEMA DE SOM E NOTIFICAÇÕES GERAIS
+        * METEOR CANVAS GENERATOR (Animação Suave 3D no ecrã de boas-vindas)
         * ==========================================
         */
-        function triggerMessageNotification() {
-            try {
-                notificationSound.pause();
-                notificationSound.currentTime = 0;
-                notificationSound.load();
-                
-                const playPromise = notificationSound.play();
-                if (playPromise !== undefined) {
-                    playPromise.catch(err => {
-                        console.log("Áudio de notificação cósmica bloqueado temporariamente:", err);
-                    });
+        function initMeteorCanvas() {
+            const canvas = document.getElementById('meteor-canvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            
+            let width = canvas.clientWidth || 192;
+            let height = canvas.clientHeight || 192;
+            canvas.width = width;
+            canvas.height = height;
+
+            let meteors = [];
+
+            class MeteorParticle {
+                constructor() {
+                    this.reset();
                 }
-            } catch (err) {
-                console.warn("Erro ao reproduzir áudio:", err);
+                reset() {
+                    this.x = Math.random() * width - width * 0.2;
+                    this.y = Math.random() * -20;
+                    this.z = Math.random() * 1.5 + 0.5; // profundidade
+                    this.speed = (Math.random() * 2.5 + 1.5) * this.z;
+                    this.angle = Math.PI / 4 + (Math.random() * 0.1 - 0.05); // Diagonal
+                    this.length = (Math.random() * 40 + 25) * this.z;
+                    this.alpha = Math.random() * 0.4 + 0.1;
+                }
+                update() {
+                    this.x += Math.cos(this.angle) * this.speed;
+                    this.y += Math.sin(this.angle) * this.speed;
+                    if (this.y > height + 20 || this.x > width + 20) {
+                        this.reset();
+                    }
+                }
+                draw() {
+                    ctx.save();
+                    ctx.globalCompositeOperation = 'screen';
+                    
+                    const headX = this.x;
+                    const headY = this.y;
+                    const tailX = this.x - Math.cos(this.angle) * this.length;
+                    const tailY = this.y - Math.sin(this.angle) * this.length;
+                    
+                    const gradient = ctx.createLinearGradient(headX, headY, tailX, tailY);
+                    gradient.addColorStop(0, `rgba(165, 180, 252, ${this.alpha})`);
+                    gradient.addColorStop(0.3, `rgba(217, 70, 239, ${this.alpha * 0.5})`);
+                    gradient.addColorStop(1, 'rgba(99, 102, 241, 0)');
+
+                    ctx.strokeStyle = gradient;
+                    ctx.lineWidth = 1.2 * this.z;
+                    ctx.lineCap = 'round';
+                    ctx.beginPath();
+                    ctx.moveTo(headX, headY);
+                    ctx.lineTo(tailX, tailY);
+                    ctx.stroke();
+                    ctx.restore();
+                }
             }
+
+            for (let i = 0; i < 6; i++) {
+                meteors.push(new MeteorParticle());
+                meteors[i].x += Math.random() * 80;
+                meteors[i].y += Math.random() * 80;
+            }
+
+            function animateMeteors() {
+                ctx.clearRect(0, 0, width, height);
+                meteors.forEach(m => {
+                    m.update();
+                    m.draw();
+                });
+                requestAnimationFrame(animateMeteors);
+            }
+            animateMeteors();
+        }
+
+        /*
+        * ==========================================
+        * UTILITÁRIO EXTRAÇÃO DE PATH SUPABASE
+        * ==========================================
+        */
+        function getStoragePathFromUrl(url, bucketName) {
+            const parts = url.split(`/public/${bucketName}/`);
+            if (parts.length > 1) {
+                return parts[1];
+            }
+            return null;
         }
 
         /*
@@ -1069,10 +1139,45 @@
 
                 // Mapear conversas ativas: contactUid -> timestamp da última mensagem
                 let activeChatsMap = {};
+                let hasNewIncomingMessageAnywhere = false;
+
                 msgsData.forEach(msg => {
                     const partnerUid = msg.sender_uid === currentUser.uid ? msg.receiver_uid : msg.sender_uid;
                     activeChatsMap[partnerUid] = new Date(msg.created_at).getTime();
+
+                    // Sincronização e Notificações Globais de Mensagens Não Lidas de Qualquer Canal
+                    if (!seenMessagesIds.has(msg.uid)) {
+                        seenMessagesIds.add(msg.uid);
+                        
+                        // Só processa se for mensagem recebida de outro utilizador
+                        if (msg.sender_uid !== currentUser.uid) {
+                            // Se for a carga inicial do app, popula silenciosamente sem som/alerta
+                            if (!isInitialLoad) {
+                                hasNewIncomingMessageAnywhere = true;
+
+                                // Se a conversa de quem enviou NÃO estiver aberta ativamente, incrementa badge de não lidas
+                                if (!activeChatUser || activeChatUser.uid !== msg.sender_uid) {
+                                    if (!unreadCountMap[msg.sender_uid]) {
+                                        unreadCountMap[msg.sender_uid] = 0;
+                                    }
+                                    unreadCountMap[msg.sender_uid] += 1;
+
+                                    const sender = usersCache[msg.sender_uid];
+                                    const senderName = sender ? sender.nick : 'Desconhecido';
+                                    showCosmicToast(`Mensagem de ${senderName}`, msg.content || "Enviou um ficheiro cósmico", "info");
+                                }
+                            }
+                        }
+                    }
                 });
+
+                // Toca a notificação sonora apenas para mensagens novas recebidas fora da carga inicial
+                if (hasNewIncomingMessageAnywhere && !isInitialLoad) {
+                    triggerMessageNotification();
+                }
+
+                // Finaliza carga inicial após o processamento da primeira lista de mensagens
+                isInitialLoad = false;
 
                 renderConversationsList(usersData, activeChatsMap);
             } catch (err) {
@@ -1258,25 +1363,7 @@
 
                 if (error) throw error;
 
-                // Armazena as novas mensagens e dispara notificação sonora se necessário
-                const newMessages = data || [];
-                let hasNewIncomingMessage = false;
-
-                newMessages.forEach(msg => {
-                    if (!seenMessagesIds.has(msg.uid)) {
-                        seenMessagesIds.add(msg.uid);
-                        // Só notifica se for uma mensagem nova recebida de outro utilizador
-                        if (msg.sender_uid !== currentUser.uid) {
-                            hasNewIncomingMessage = true;
-                        }
-                    }
-                });
-
-                if (hasNewIncomingMessage) {
-                    triggerMessageNotification();
-                }
-
-                messagesList = newMessages;
+                messagesList = data || [];
                 renderMessages();
             } catch (err) {
                 console.error(err);
@@ -1670,10 +1757,19 @@
             showCosmicToast("Foto de Perfil", "A atualizar avatar cósmico...", "info");
 
             try {
-                const fileExt = file.name.split('.').pop();
-                const filePath = `avatars/${currentUser.uid}.${fileExt}`;
+                // 1. Identificar foto antiga para remoção posterior e evitar lixo no Supabase
+                const oldAvatarUrl = currentUser.avatar_url;
+                let oldPathToDelete = null;
+                if (oldAvatarUrl && oldAvatarUrl.includes('/profile_photos/')) {
+                    oldPathToDelete = getStoragePathFromUrl(oldAvatarUrl, 'profile_photos');
+                }
 
-                // Upload em substituição rápida (upsert)
+                // 2. Criar ficheiro novo com carimbo de tempo para quebrar a cache do browser
+                const fileExt = file.name.split('.').pop();
+                const newFileName = `${currentUser.uid}_${Date.now()}.${fileExt}`;
+                const filePath = `avatars/${newFileName}`;
+
+                // 3. Fazer upload da nova imagem
                 const { data, error } = await supabaseClient.storage
                     .from('profile_photos')
                     .upload(filePath, file, { upsert: true });
@@ -1686,6 +1782,7 @@
 
                 const avatarUrl = publicData.publicUrl;
 
+                // 4. Gravar na tabela do Supabase a nova URL
                 const { error: updateErr } = await supabaseClient
                     .from('galatic_users')
                     .update({ avatar_url: avatarUrl })
@@ -1693,6 +1790,14 @@
 
                 if (updateErr) throw updateErr;
 
+                // 5. Apagar o ficheiro antigo do bucket do Supabase de forma definitiva
+                if (oldPathToDelete) {
+                    await supabaseClient.storage
+                        .from('profile_photos')
+                        .remove([oldPathToDelete]);
+                }
+
+                // 6. Atualizar a cache local e a árvore DOM instantaneamente
                 currentUser.avatar_url = avatarUrl;
                 localStorage.setItem('galatic_logged_user', JSON.stringify(currentUser));
                 document.getElementById('settings-my-avatar').src = avatarUrl;
