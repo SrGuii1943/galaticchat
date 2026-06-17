@@ -250,7 +250,7 @@
         </div>
 
         <!-- 2. ECRÃ DE REGISTO -->
-        <div id="screen-register" class="app-screen w-full max-w-md mx-auto my-auto flex-col p-6 rounded-2xl glass-card fade-in">
+        <div id="screen-register" class="app-screen w-full h-full max-h-full max-w-6xl mx-auto flex flex-col md:flex-row rounded-none md:rounded-2xl glass-card overflow-hidden fade-in shadow-2xl relative">
             <div class="text-center mb-6">
                 <div class="inline-flex p-3 rounded-full bg-magenta-500/10 mb-2 border border-pink-500/25">
                     <i data-lucide="sparkles" class="w-12 h-12 text-pink-400"></i>
@@ -309,7 +309,7 @@
                         </div>
                     </div>
                     <div class="flex items-center gap-2">
-                        <!-- Botão Novo Status Compacto - Ícone elegante circular de pulsar cósmico -->
+                        <!-- Botão Novo Status Compacto -->
                         <button onclick="openPublishStatusModal()" class="p-2.5 rounded-full bg-gradient-to-r from-indigo-500/20 to-pink-500/20 hover:from-indigo-500/30 hover:to-pink-500/30 text-pink-400 border border-pink-500/30 transition flex items-center justify-center shadow-[0_0_15px_rgba(217,70,239,0.15)]" title="Publicar Status Cósmico">
                             <i data-lucide="plus-circle" class="w-5 h-5"></i>
                         </button>
@@ -1142,6 +1142,28 @@
                 requestAnimationFrame(animateMeteors);
             }
             animateMeteors();
+        }
+
+        /*
+        * ==========================================
+        * SISTEMA DE SOM E NOTIFICAÇÕES GERAIS
+        * ==========================================
+        */
+        function triggerMessageNotification() {
+            try {
+                notificationSound.pause();
+                notificationSound.currentTime = 0;
+                notificationSound.load();
+                
+                const playPromise = notificationSound.play();
+                if (playPromise !== undefined) {
+                    playPromise.catch(err => {
+                        console.log("Áudio de notificação cósmica bloqueado temporariamente pelas restrições do browser:", err);
+                    });
+                }
+            } catch (err) {
+                console.warn("Erro ao reproduzir áudio de notificação:", err);
+            }
         }
 
         /*
@@ -2253,7 +2275,7 @@
                 document.getElementById('settings-my-avatar').src = avatarUrl;
                 document.getElementById('my-avatar').src = avatarUrl;
 
-                showCosmicToast("Identidade Atualizada", "A sua foto de perfil foi guardada.", "success");
+                showCosmicToast("Identidade Ativada", "A sua foto de perfil foi guardada.", "success");
                 await loadConversations();
             } catch (err) {
                 console.error(err);
